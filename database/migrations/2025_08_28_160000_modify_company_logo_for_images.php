@@ -1,0 +1,29 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('companies', function (Blueprint $table) {
+            // Cambiar de string a longText para soportar base64 de imágenes
+            $table->longText('company_logo')->nullable()->change();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('companies', function (Blueprint $table) {
+            $table->string('company_logo')->nullable()->change();
+        });
+    }
+};
