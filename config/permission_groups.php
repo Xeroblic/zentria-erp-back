@@ -57,4 +57,25 @@ return [
         'manage-invitations',
     ],
 
+    'product' => [
+        'view-product',
+        'create-product',
+        'edit-product',
+        'delete-product'
+    ],
+
+    'category' => [
+        'view-category',
+        'create-category',
+        'edit-category',
+        'delete-category'
+    ],
+
+    'brand' => [
+        'view-brand',
+        'create-brand',
+        'edit-brand',
+        'delete-brand'
+    ],
+
 ];

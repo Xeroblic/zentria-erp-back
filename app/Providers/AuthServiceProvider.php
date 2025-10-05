@@ -22,7 +22,9 @@ class AuthServiceProvider extends ServiceProvider
         UserPersonalization::class => UserPersonalizationPolicy::class,
         User::class => UserPolicy::class,
         Branch::class => BranchPolicy::class,
-
+        Product::class => ProductPolicy::class,
+        Brand::class => BrandPolicy::class,
+        Category::class => CategoryPolicy::class,
     ];
 
     public function register(): void

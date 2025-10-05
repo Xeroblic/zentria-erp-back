@@ -7,12 +7,21 @@ use App\Models\Branch;
 
 class BranchController extends Controller
 {
+
     public function show($id)
     {
         $branch = Branch::findOrFail($id);
         $this->authorize('view', $branch);
 
         return response()->json($branch);
+    }
+    /* Se agrega para dar solución a error al hacer un post a branch, en caso de no necesitarse se elimina método + endpoint */
+    public function store(Request $request)
+    {
+        $this->authorize('create', Branch::class);
+
+        $branch = Branch::create($request->all());
+        return response()->json($branch, 201);
     }
 
     public function update(Request $request, $id)
@@ -34,4 +43,5 @@ class BranchController extends Controller
 
         return response()->json(['message' => 'Sucursal eliminada.']);
     }
+    
 }

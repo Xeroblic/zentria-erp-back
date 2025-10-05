@@ -153,6 +153,11 @@ require __DIR__ . '/apis/subsidiary.php';
 require __DIR__ . '/apis/branch.php';
 require __DIR__ . '/apis/users.php';
 require __DIR__ . '/apis/invitations.php';
+require __DIR__ . '/apis/brands.php';
+require __DIR__ . '/apis/productCategory.php';
+require __DIR__ . '/apis/products.php';
+require __DIR__ . '/apis/categories.php';
+
 
 // ===============================================
 // RUTAS DE SERVICIOS EXTERNOS
@@ -191,6 +196,7 @@ Route::middleware(['auth:api'])->prefix('falabella')->group(function () {
         Route::put('/products/{sku}/stock', [FalabellaController::class, 'updateStock']);
     });
 });
+
 
 // TODO: Aquí puedes agregar otros servicios como MercadoLibre, Amazon, etc.
 // Route::middleware(['auth:api'])->prefix('mercadolibre')->group(function () {

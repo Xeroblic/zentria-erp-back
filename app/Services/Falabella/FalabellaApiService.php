@@ -26,8 +26,8 @@ class FalabellaApiService implements FalabellaClient
         $config = config('falabella');
         
         $this->baseUrl = $config['base_url'];
-        $this->userId = $config['user_id'];
-        $this->apiKey = $config['api_key'];
+        $this->userId = $config['user_id'] ?? 'NOT_SET';
+        $this->apiKey = $config['api_key'] ?? 'NOT_SET';
         $this->version = $config['version'];
         $this->format = $config['format'];
         $this->timeout = $config['timeout'];

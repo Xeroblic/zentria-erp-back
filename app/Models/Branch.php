@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 class Branch extends Model
 {
@@ -29,5 +31,15 @@ class Branch extends Model
         return $this->belongsToMany(User::class)
             ->withPivot('is_primary', 'position')
             ->withTimestamps();
+    }
+
+    public function brands(): HasMany
+    {
+        return $this->hasMany(Brand::class);
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
     }
 }

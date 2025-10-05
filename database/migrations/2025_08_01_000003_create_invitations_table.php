@@ -31,8 +31,6 @@ return new class extends Migration
             $table->foreignId('invited_by')->constrained('users')->cascadeOnDelete();
             
             // Asignación organizacional
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('subsidiary_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             
             // Roles y permisos a asignar
@@ -58,7 +56,7 @@ return new class extends Migration
             $table->index(['email', 'status']);
             $table->index(['uid', 'token']); 
             $table->index(['status', 'expires_at']);
-            $table->index(['company_id', 'branch_id']);
+            $table->index(['branch_id']);
         });
     }
 
