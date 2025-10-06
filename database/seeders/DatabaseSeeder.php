@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             
             // Datos de ejemplo multi-empresa
             MultiCompanyExampleSeeder::class,
+            
             // Datos de ejemplo catálogo - productos, marcas, categorías
             DemoCatalogSeeder::class,
         ]);
