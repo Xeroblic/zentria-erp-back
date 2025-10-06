@@ -37,7 +37,7 @@ services:
     environment:
       POSTGRES_DB: zentriaback
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 
+      POSTGRES_PASSWORD: root
       TZ: America/Santiago
     ports:
       - "5432:5432"
