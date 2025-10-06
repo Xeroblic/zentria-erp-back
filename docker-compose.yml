@@ -21,7 +21,7 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: root
       RUN_MIGRATIONS: "true"
-      RUN_SEED: "false"
+      RUN_SEED: "true"
     ports:
       - "8000:8000"
     volumes:
