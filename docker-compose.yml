@@ -24,11 +24,12 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./:/var/www
-      - /var/www/vendor
+      - .:/var/www
+      - vendor:/var/www/vendor
     depends_on:
       db:
         condition: service_healthy
+
 
   db:
     image: postgres:16
@@ -59,3 +60,4 @@ services:
 
 volumes:
   db-data:
+  vendor:
