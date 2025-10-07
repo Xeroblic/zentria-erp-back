@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\TogglesActiveFlag;
 use App\Http\Requests\Product\StoreProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
@@ -11,6 +12,9 @@ use Illuminate\Http\Request;
 
 class BranchProductsController extends Controller
 {
+
+    use TogglesActiveFlag;
+
     public function index(Request $request, Branch $branch)
     {
         $this->authorize('viewAny', [Product::class, $branch]);
@@ -107,5 +111,10 @@ class BranchProductsController extends Controller
         if ($product->branch_id !== $branch->id) abort(404);
         $product->delete();
         return response()->json(['deleted'=>true]);
+    }
+
+    public function toggleStatus(Branch $branch, Product $product)
+    {
+        return $this->toggleModelActive($product, 'Producto');
     }
 }

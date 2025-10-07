@@ -10,6 +10,8 @@ class Brand extends Model
 {
     // use SoftDeletes; -> activar cuando se pueda implementar método restore en controlador + lógica de restauración en front
     
+    protected $casts = ['is_active' => 'boolean'];
+
     protected $fillable = ['branch_id', 'name'];
     
     public function products(): HasMany { 

@@ -13,6 +13,8 @@ class Category extends Model
 {
     // use SoftDeletes; -> activar cuando se pueda implementar método restore en controlador + lógica de restauración en front
 
+    protected $casts = ['is_active' => 'boolean'];
+
     protected $fillable = ['parent_id','name','slug'];
 
     public function parent(): BelongsTo { return $this->belongsTo(Category::class, 'parent_id'); }

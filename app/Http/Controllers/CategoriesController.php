@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\TogglesActiveFlag;
 use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
@@ -10,6 +11,9 @@ use Illuminate\Http\Request;
 
 class CategoriesController extends Controller
 {
+
+    use TogglesActiveFlag;
+
     public function index(Request $request)
     {
         $this->authorize('viewAny', Category::class);
@@ -57,5 +61,10 @@ class CategoriesController extends Controller
         $this->authorize('delete', $category);
         $category->delete();
         return response()->json(['deleted'=>true]);
+    }
+
+    public function toggleStatus(Category $category)
+    {
+        return $this->toggleModelActive($category, 'Categoría');
     }
 }

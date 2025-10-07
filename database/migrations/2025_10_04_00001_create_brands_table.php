@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->string('name', 255);
             $table->string('slug', 255)->unique()->nullable();
+            $table->boolean('is_active')->default(true);
 
             // timestamps(0) y soft deletes en PG
             $table->timestamps();

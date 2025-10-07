@@ -8,4 +8,5 @@ Route::middleware(['auth:api'])->group(function(){
     Route::get('categories/{category}', [CategoriesController::class,'show'])->middleware('can:view-category');
     Route::match(['put','patch'], 'categories/{category}', [CategoriesController::class,'update'])->middleware('can:edit-category');
     Route::delete('categories/{category}', [CategoriesController::class,'destroy'])->middleware('can:delete-category');
+    Route::patch('categories/{category}/toggle-status',     [CategoriesController::class, 'toggleStatus'])->middleware('can:edit-category');
 });

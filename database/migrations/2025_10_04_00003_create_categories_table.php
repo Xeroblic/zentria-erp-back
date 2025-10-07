@@ -22,6 +22,7 @@ return new class extends Migration
               ->nullOnDelete();             // si borras el padre, deja NULL
 
             $table->string('slug', 250)->unique()->nullable(); 
+            $table->boolean('is_active')->default(true);
             // Timestamps y soft delete con precisión 0 (timestamp(0))
             $table->timestamps();
             $table->softDeletes();

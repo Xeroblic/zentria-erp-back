@@ -11,6 +11,7 @@ class BrandResource extends JsonResource
             'branch_id'=>$this->branch_id,
             'name'=>$this->name,
             'slug'=>$this->slug,
+            'associated_products'=>$this->products_count ?? 0,
             'created_at'=>$this->created_at,
             'updated_at'=>$this->updated_at,
         ];
