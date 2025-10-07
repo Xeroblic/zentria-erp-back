@@ -25,5 +25,9 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Opcache
+RUN docker-php-ext-install opcache
+COPY docker/php-opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
 EXPOSE 8000
 CMD ["/entrypoint.sh"]
