@@ -9,11 +9,12 @@ services:
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
+      # URL pública para navegar desde el HOST (tu PC)
       APP_URL: http://localhost:8000
       APP_PORT: 8000
       TZ: America/Santiago
       DB_CONNECTION: pgsql
-      DB_HOST: db
+      DB_HOST: db              # OK: nombre del servicio DB
       DB_PORT: 5432
       DB_DATABASE: zentriaback
       DB_USERNAME: postgres
@@ -37,7 +38,7 @@ services:
       POSTGRES_DB: zentriaback
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
-      TZ: America/Santiago  
+      TZ: America/Santiago
     command: ["postgres",
       "-c","shared_buffers=512MB",
       "-c","effective_cache_size=2GB",
@@ -47,7 +48,7 @@ services:
       "-c","max_wal_size=1GB",
       "-c","checkpoint_timeout=10min"]
     ports:
-      - "5432:5432"
+      - "5432:5432"   # en prod podrías NO exponerlo
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
       interval: 5s
