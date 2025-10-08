@@ -32,6 +32,7 @@ class StoreProductRequest extends FormRequest
             'warranty_months' => ['integer','min:0'],
             'cost' => ['numeric','min:0'],
             'price' => ['required', 'numeric','min:0'],
+            'offer_price' => ['nullable', 'numeric','min:0', 'lte:price'],
             'attributes_json' => ['nullable','array'], // jsonb
             'is_active' => ['required', 'boolean'],
             'category_ids' => ['required', 'array'],

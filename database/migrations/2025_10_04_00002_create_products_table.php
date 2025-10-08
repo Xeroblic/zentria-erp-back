@@ -26,6 +26,7 @@ return new class extends Migration {
 
             $table->decimal('cost', 14, 2)->default(0);
             $table->decimal('price', 14, 2)->default(0);
+            $table->decimal('offer_price', 14, 2)->nullable();
 
             // PostgreSQL: JSONB
             $table->jsonb('attributes_json')->nullable();

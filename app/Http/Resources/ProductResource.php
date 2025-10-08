@@ -25,6 +25,7 @@ class ProductResource extends JsonResource
             'warranty_months' => $this->warranty_months,
             'cost' => $this->cost,
             'price' => $this->price,
+            'offer_price' => $this->offer_price,
             'attributes_json' => $this->attributes_json,
             'is_active' => $this->is_active,
             'category_ids' => $this->whenLoaded('categories', fn() => $this->categories->map(fn($c) => [

@@ -31,6 +31,7 @@ class UpdateProductRequest extends FormRequest
             'warranty_months' => ['sometimes','integer','min:0'],
             'cost' => ['sometimes','numeric','min:0'],
             'price' => ['sometimes','numeric','min:0'],
+            'offer_price' => ['sometimes', 'numeric','min:0', 'lte:price'],
             'attributes_json' => ['sometimes','nullable','array'],
             'is_active' => ['sometimes','boolean'],
             'category_ids' => ['sometimes','array'],

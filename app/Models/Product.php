@@ -14,7 +14,7 @@ class Product extends Model
     protected $fillable = [
         'branch_id','sku','commercial_sku','barcode','name','brand_id',
         'product_type','condition_policy','serial_tracking','uom',
-        'warranty_months','cost','price','attributes_json','is_active'
+        'warranty_months','cost','price','offer_price','attributes_json','is_active'
     ];
 
     protected $casts = [
@@ -23,6 +23,7 @@ class Product extends Model
         'attributes_json' => 'array', // jsonb ⇄ array
         'cost' => 'decimal:2',
         'price' => 'decimal:2',
+        'offer_price' => 'decimal:2',
     ];
 
     public function branch(): BelongsTo { return $this->belongsTo(Branch::class); }
