@@ -34,6 +34,7 @@ class UpdateProductRequest extends FormRequest
             'cost' => ['sometimes','numeric','min:0'],
             'price' => ['sometimes','numeric','min:0'],
             'offer_price' => ['sometimes', 'numeric','min:0', 'lte:price'],
+            'product_status' => ['sometimes','string','max:255'],
             'attributes_json' => ['sometimes','nullable','array'],
             'is_active' => ['sometimes','boolean'],
             'category_ids' => ['sometimes','array'],

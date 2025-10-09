@@ -35,6 +35,7 @@ class StoreProductRequest extends FormRequest
             'cost' => ['numeric','min:0'],
             'price' => ['required', 'numeric','min:0'],
             'offer_price' => ['nullable', 'numeric','min:0', 'lte:price'],
+            'product_status' => ['nullable','string','max:255'],
             'attributes_json' => ['nullable','array'], // jsonb
             'is_active' => ['required', 'boolean'],
             'category_ids' => ['required', 'array'],

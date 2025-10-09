@@ -28,6 +28,7 @@ class ProductResource extends JsonResource
             'cost' => $this->cost,
             'price' => $this->price,
             'offer_price' => $this->offer_price,
+            'product_status' => $this->product_status,
             'attributes_json' => $this->attributes_json,
             'is_active' => $this->is_active,
             'category_ids' => $this->whenLoaded('categories', fn() => $this->categories->map(fn($c) => [
