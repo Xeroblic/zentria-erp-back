@@ -19,10 +19,14 @@ return new class extends Migration {
             $table->foreignId('brand_id')->constrained('brands');
 
             $table->string('product_type', 255)->default('device');
-            $table->string('condition_policy', 255)->default('none');
-            $table->boolean('serial_tracking')->default(false);
-            $table->string('uom', 255)->default('unit');
             $table->integer('warranty_months')->default(0);
+            $table->boolean('serial_tracking')->default(false);
+            $table->text('short_description')->nullable();
+            $table->text('long_description')->nullable();
+            
+            $table->integer('stock')->default(0);
+
+            $table->text('snippet_description')->nullable();
 
             $table->decimal('cost', 14, 2)->default(0);
             $table->decimal('price', 14, 2)->default(0);

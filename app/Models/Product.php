@@ -13,8 +13,9 @@ class Product extends Model
 
     protected $fillable = [
         'branch_id','sku','commercial_sku','barcode','name','brand_id',
-        'product_type','condition_policy','serial_tracking','uom',
-        'warranty_months','cost','price','offer_price','attributes_json','is_active'
+        'product_type', 'serial_tracking', 'warranty_months','cost',
+        'price', 'offer_price','attributes_json','is_active',
+        'short_description','long_description','stock','snippet_description',
     ];
 
     protected $casts = [
