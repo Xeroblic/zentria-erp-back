@@ -157,6 +157,7 @@ require __DIR__ . '/apis/brands.php';
 require __DIR__ . '/apis/productCategory.php';
 require __DIR__ . '/apis/products.php';
 require __DIR__ . '/apis/categories.php';
+require __DIR__ . '/apis/productAttributes.php';
 
 
 // ===============================================
