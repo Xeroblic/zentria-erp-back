@@ -35,6 +35,10 @@ if [ "${RUN_SEED:-false}" = "true" ]; then
   php artisan db:seed --force
 fi
 
+# imagenes spatie
+mkdir -p storage/app/public
+php artisan storage:link || true
+
 # Permisos
 chown -R www-data:www-data storage bootstrap/cache || true
 

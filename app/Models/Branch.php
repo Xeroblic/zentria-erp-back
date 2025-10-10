@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 
 class Branch extends Model
 {
+    use InteractsWithMedia;
+
     protected $fillable = [
         'subsidiary_id',
         'branch_name',
@@ -21,6 +25,17 @@ class Branch extends Model
         'branch_opening_hours',
         'branch_location',
     ];
+
+     public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('library'); // biblioteca propia de la sucursal
+    }
+
+    public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media=null): void
+    {
+        $this->addMediaConversion('thumb')->width(320)->height(320);
+        $this->addMediaConversion('web')->format('webp')->width(1200);
+    }
 
     public function subsidiary()
     {
