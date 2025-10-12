@@ -5,11 +5,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use App\Models\Concerns\HasModelImages;
 use Illuminate\Database\Eloquent\Builder;
 
-class Product extends Model
+class Product extends Model implements HasMedia
 {
     use HasFactory;
+
+    use InteractsWithMedia, HasModelImages;
 
     protected $fillable = [
         'branch_id','sku','commercial_sku','barcode','name','brand_id',
@@ -27,6 +32,8 @@ class Product extends Model
         'price' => 'decimal:2',
         'offer_price' => 'decimal:2',
     ];
+
+    public static function primaryCollection(): string { return 'main'; }
 
     public function branch(): BelongsTo { return $this->belongsTo(Branch::class); }
     
@@ -52,5 +59,15 @@ class Product extends Model
         });
     }
 
-    
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('main')->singleFile()->useDisk('public');
+        $this->addMediaCollection('gallery')->useDisk('public');
+    }
+
+    public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')->width(400)->height(400);
+        $this->addMediaConversion('web')->format('webp')->width(1200);
+    }
 }

@@ -6,6 +6,17 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/branches/{branch}/library/media', [BranchMediaController::class, 'uploadToLibrary'])
         ->name('branches.library.media.upload');
 
+    Route::post('/branches/{branch}/{type}/{id}/media/set-primary', [BranchMediaController::class, 'setPrimary'])
+    ->whereIn('type', ['products','brands','categories'])
+    ->whereNumber('id')
+    ->middleware('auth:api');
+
+    Route::post('/branches/{branch}/{type}/{id}/media/upload-multiple',
+        [BranchMediaController::class, 'uploadMultipleDirect'])
+        ->whereIn('type', ['products','brands','categories'])
+        ->whereNumber('id')
+        ->name('branches.media.uploadMultipleDirect');
+
     Route::get('/branches/{branch}/library/media', [BranchMediaController::class, 'listLibrary'])
         ->name('branches.library.media.index');
 
@@ -25,4 +36,9 @@ Route::middleware(['auth:api'])->group(function () {
     Route::delete('/branches/{branch}/media/{id}', [BranchMediaController::class, 'destroy'])
         ->whereNumber('id')
         ->name('branches.media.destroy');
+
+    Route::post('/branches/{branch}/{type}/{id}/media/delete-batch',
+        [BranchMediaController::class, 'deleteBatch'])
+        ->whereIn('type', ['products','brands','categories']);
+
 });

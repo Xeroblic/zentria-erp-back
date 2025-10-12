@@ -8,7 +8,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 
-class Branch extends Model
+class Branch extends Model Implements HasMedia
 {
     use InteractsWithMedia;
 
@@ -26,14 +26,14 @@ class Branch extends Model
         'branch_location',
     ];
 
-     public function registerMediaCollections(): void
+    public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('library'); // biblioteca propia de la sucursal
+        $this->addMediaCollection('library')->useDisk('public'); // biblioteca propia de la sucursal
     }
 
     public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media=null): void
     {
-        $this->addMediaConversion('thumb')->width(320)->height(320);
+        $this->addMediaConversion('thumb')->width(400)->height(400);
         $this->addMediaConversion('web')->format('webp')->width(1200);
     }
 

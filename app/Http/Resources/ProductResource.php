@@ -34,6 +34,8 @@ class ProductResource extends JsonResource
             'category_ids' => $this->whenLoaded('categories', fn() => $this->categories->map(fn($c) => [
                 'id' => $c->id, 'name' => $c->name, 'slug' => $c->slug,
             ])),
+            'image'   => $this->primaryImagePayload(),
+            'gallery' => $this->galleryPayload(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
