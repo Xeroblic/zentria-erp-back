@@ -20,6 +20,13 @@ if [ ! -d vendor ]; then
   composer install --no-interaction --prefer-dist --no-progress
 fi
 
+if [ ! -f vendor/autoload.php ]; then
+  composer install --no-interaction --prefer-dist --optimize-autoloader
+fi
+php artisan package:discover --ansi || true
+php artisan optimize:clear || true
+exec "$@"
+
 # Claves de la app y JWT
 php artisan key:generate --force || true
 if ! grep -q "^JWT_SECRET=" .env 2>/dev/null; then

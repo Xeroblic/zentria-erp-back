@@ -7,4 +7,4 @@ Route::middleware(['auth:api'])->group(function () {
 
 // Activation flow used by frontend
 Route::get('/usuarios/activar/{token}', [UserInvitationController::class, 'showActivation']);
-Route::post('/api/usuarios/activar', [UserInvitationController::class, 'activate']);
+Route::post('/usuarios/activar', [UserInvitationController::class, 'activate']);
