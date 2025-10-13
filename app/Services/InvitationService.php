@@ -2,278 +2,224 @@
 
 namespace App\Services;
 
-use App\Models\Invitation;
-use App\Models\User;
-use App\Models\Company;
-use App\Models\Branch;
-use App\Mail\InvitacionMail;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Hash;
+use App\Enums\InvitationStatus;
+use App\Models\{Invitation, User, Branch};
+use App\Notifications\UserInvitationNotification;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class InvitationService
 {
     /**
-     * Crear nueva invitación
+     * Create a branch-scoped invitation + temporary user (is_active = false).
+     * $payload must include: email, first_name, last_name, role_name (+ optional fields).
      */
-    public function createInvitation(array $data): Invitation
-    {
-        $this->validateInvitationData($data);
-        
-        // Verificar que no existe usuario con este email
-        if (User::where('email', $data['email'])->exists()) {
-            throw new \Exception('Ya existe un usuario con este email');
+    public function invite(
+        User $inviter,
+        int $branchId,
+        array $payload,
+        ?int $ttlDays = 7
+    ): Invitation {
+        $branch = Branch::query()->with(['subsidiary.company'])->findOrFail($branchId);
+
+        // RBAC guard (company/subsidiary/branch rules)
+        if (! $this->canInviteToBranch($inviter, $branch)) {
+            throw ValidationException::withMessages(['permission' => 'Not allowed to invite to this branch.']);
         }
-        
-        // Verificar que no hay invitación pendiente
-        $existingInvitation = Invitation::where('email', $data['email'])
-            ->valid()
-            ->first();
-            
-        if ($existingInvitation) {
-            throw new \Exception('Ya existe una invitación pendiente para este email');
+
+        // Map role aliases (Spanish -> internal)
+        $role = $this->normalizeRoleName($payload['role_name'] ?? '');
+        if (! $role) {
+            throw ValidationException::withMessages(['role_name' => 'Invalid role_name.']);
         }
-        
-        // Validar relaciones organizacionales
-        $this->validateOrganizationalData($data);
-        
-        return DB::transaction(function () use ($data) {
-            return Invitation::create([
-                'email' => $data['email'],
-                'first_name' => $data['first_name'],
-                'last_name' => $data['last_name'],
-                'rut' => $data['rut'] ?? null,
-                'position' => $data['position'] ?? null,
-                'phone_number' => $data['phone_number'] ?? null,
-                'address' => $data['address'] ?? null,
-                'invited_by' => $data['invited_by'],
-                'company_id' => $data['company_id'],
-                'subsidiary_id' => $data['subsidiary_id'] ?? null,
-                'branch_id' => $data['branch_id'],
-                'role_name' => $data['role_name'],
-                'permissions' => $data['permissions'] ?? [],
-                'data' => $data['additional_data'] ?? []
+
+        // Email validation + uniqueness (block if ANY user already has this email)
+        $email = strtolower(trim($payload['email'] ?? ''));
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw ValidationException::withMessages(['email' => 'Invalid email.']);
+        }
+        if (User::whereRaw('LOWER(email) = ?', [$email])->exists()) {
+            throw ValidationException::withMessages(['email' => 'Email already registered.']);
+        }
+
+        return DB::transaction(function () use ($inviter, $branch, $email, $payload, $role, $ttlDays) {
+            $token = (string) Str::uuid();
+            $tempPasswordHash = Hash::make(Str::random(16));
+            $expiresAt = now()->addDays($ttlDays ?? 7);
+
+            // 1) Create temporary user (is_active = false)
+            $user = new User();
+            $user->first_name       = $payload['first_name']       ?? null;
+            $user->middle_name      = $payload['middle_name']      ?? null;
+            $user->last_name        = $payload['last_name']        ?? null;
+            $user->second_last_name = $payload['second_last_name'] ?? null;
+            $user->position         = $payload['position']         ?? null;
+            $user->rut              = $payload['rut']              ?? null;
+            $user->phone_number     = $payload['phone_number']     ?? null;
+            $user->address          = $payload['address']          ?? null;
+            $user->email            = $email;
+            $user->password         = $tempPasswordHash; // TEMP HASH (never plain)
+            $user->is_active        = false;
+            $user->primary_branch_id= $branch->id; // seed primary scope
+            $user->save();
+
+            // 2) Create invitation snapshot
+            $inv = Invitation::create([
+                'uid'               => (string) Str::ulid(),
+                'token'             => $token,
+                'email'             => $email,
+                'first_name'        => $payload['first_name'] ?? '',
+                'last_name'         => $payload['last_name'] ?? '',
+                'rut'               => $payload['rut'] ?? null,
+                'position'          => $payload['position'] ?? null,
+                'phone_number'      => $payload['phone_number'] ?? null,
+                'address'           => $payload['address'] ?? null,
+                'invited_by'        => $inviter->id,
+                'branch_id'         => $branch->id,
+                'role_name'         => $role,
+                'permissions'       => $payload['permissions'] ?? null,
+                'temporary_password'=> $tempPasswordHash, // store HASH only
+                'status'            => InvitationStatus::PENDING,
+                'expires_at'        => $expiresAt,
+                'sent_at'           => now(),
+                'data'              => $payload['data'] ?? null,
             ]);
-        });
-    }
-    
-    /**
-     * Enviar invitación por email
-     */
-    public function sendInvitation(Invitation $invitation): bool
-    {
-        try {
-            if ($invitation->status !== Invitation::STATUS_PENDING) {
-                throw new \Exception('La invitación no está en estado pendiente');
-            }
-            
-            if (!$invitation->isValid()) {
-                throw new \Exception('La invitación ha expirado');
-            }
-            
-            // Enviar email
-            Mail::to($invitation->email)->send(new InvitacionMail($invitation));
-            
-            // Marcar como enviada
-            $invitation->markAsSent();
-            
-            return true;
-            
-        } catch (\Exception $e) {
-            Log::error('Error enviando invitación: ' . $e->getMessage(), [
-                'invitation_id' => $invitation->id,
-                'email' => $invitation->email
-            ]);
-            
-            return false;
-        }
-    }
-    
-    /**
-     * Aceptar invitación y crear usuario
-     */
-    public function acceptInvitation(string $uid, string $token, array $userData): User
-    {
-        $invitation = Invitation::findByUidAndToken($uid, $token);
-        
-        if (!$invitation) {
-            throw new \Exception('Invitación no válida o expirada');
-        }
-        
-        if ($invitation->status === Invitation::STATUS_ACCEPTED) {
-            throw new \Exception('Esta invitación ya ha sido aceptada');
-        }
-        
-        // Validar datos del usuario
-        $validator = Validator::make($userData, [
-            'password' => 'required|string|min:8|confirmed',
-            'terms_accepted' => 'required|boolean|accepted'
-        ]);
-        
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
-        
-        return DB::transaction(function () use ($invitation, $userData) {
-            // Crear usuario
-            $user = User::create([
-                'first_name' => $invitation->first_name,
-                'last_name' => $invitation->last_name,
-                'email' => $invitation->email,
-                'rut' => $invitation->rut,
-                'position' => $invitation->position,
-                'phone_number' => $invitation->phone_number,
-                'address' => $invitation->address,
-                'password' => Hash::make($userData['password']),
-                'is_active' => true,
-                'primary_branch_id' => $invitation->branch_id
-            ]);
-            
-            // Asignar rol principal
-            $user->assignRole($invitation->role_name);
-            
-            // Asignar permisos adicionales si los hay
-            if (!empty($invitation->permissions)) {
-                $user->givePermissionTo($invitation->permissions);
-            }
-            
-            // Asignar a empresa y sucursal usando el servicio contextual
-            $contextualService = app(\App\Services\ContextualRoleService::class);
-            $contextualService->assignUserToCompany(
-                $user, 
-                $invitation->company,
-                $invitation->role_name,
-                $invitation->position
+
+            $activationUrl = $this->buildActivationUrl($token);
+
+            // etiqueta segura de sucursal (por si branch_name viene null)
+            $branchLabel = (string) (
+                $branch->branch_name
+                ?? $branch->branch_manager_name
+                ?? $branch->branch_email
+                ?? ("Sucursal #{$branch->id}")
             );
-            
-            if ($invitation->branch) {
-                $contextualService->assignUserToBranch(
-                    $user,
-                    $invitation->branch,
-                    $invitation->position,
-                    true // Es sucursal primaria
-                );
-            }
-            
-            // Marcar invitación como aceptada
-            $invitation->markAsAccepted();
-            
-            return $user;
+
+            // Después (posicional: no depende de los nombres del constructor)
+            Notification::route('mail', $email)->notify(
+                new UserInvitationNotification(
+                    $activationUrl,                 // activationUrl
+                    $role,                          // role
+                    $branchLabel,                   // branchName (puede ser null/str)
+                    $expiresAt->toIso8601String()   // expiresAt (string)
+                )
+            );
+
+            return $inv;
         });
     }
-    
-    /**
-     * Reenviar invitación
-     */
-    public function resendInvitation(Invitation $invitation): bool
+
+    /** Activation: validates token, sets is_active=true, updates password, marks invite used. */
+    public function activate(string $token, string $newPassword): array
     {
-        if ($invitation->status === Invitation::STATUS_ACCEPTED) {
-            throw new \Exception('No se puede reenviar una invitación ya aceptada');
+        $inv = Invitation::where('token', $token)->first();
+        if (! $inv) throw ValidationException::withMessages(['token' => 'Invalid token.']);
+
+        if ($inv->status !== InvitationStatus::PENDING) {
+            throw ValidationException::withMessages(['token' => 'Invitation no longer valid.']);
         }
-        
-        // Regenerar tokens y extender expiración
-        $invitation->generateTokens();
-        $invitation->status = Invitation::STATUS_PENDING;
-        $invitation->sent_at = null;
-        $invitation->save();
-        
-        return $this->sendInvitation($invitation);
-    }
-    
-    /**
-     * Cancelar invitación
-     */
-    public function cancelInvitation(Invitation $invitation): bool
-    {
-        if ($invitation->status === Invitation::STATUS_ACCEPTED) {
-            throw new \Exception('No se puede cancelar una invitación ya aceptada');
+        if ($inv->expires_at->isPast()) {
+            $inv->status = InvitationStatus::EXPIRED;
+            $inv->save();
+            throw ValidationException::withMessages(['token' => 'Invitation expired.']);
         }
-        
-        $invitation->cancel();
-        return true;
-    }
-    
-    /**
-     * Limpiar invitaciones expiradas
-     */
-    public function cleanupExpiredInvitations(): int
-    {
-        $expiredCount = Invitation::expired()->count();
-        
-        Invitation::expired()->update(['status' => Invitation::STATUS_EXPIRED]);
-        
-        return $expiredCount;
-    }
-    
-    /**
-     * Obtener estadísticas de invitaciones
-     */
-    public function getInvitationStats(int $companyId = null): array
-    {
-        $query = Invitation::query();
-        
-        if ($companyId) {
-            $query->where('company_id', $companyId);
+
+        // User is the temp one we created on invite (no token column on users)
+        $user = User::where('email', $inv->email)->first();
+        if (! $user) throw ValidationException::withMessages(['token' => 'Activation user not found.']);
+
+        // Finalize user account
+        $user->password          = Hash::make($newPassword);
+        $user->is_active         = true;
+        $user->email_verified_at = now();
+
+        // Optionally hydrate missing profile data from invitation
+        $user->first_name        = $user->first_name       ?: $inv->first_name;
+        $user->last_name         = $user->last_name        ?: $inv->last_name;
+        $user->phone_number      = $user->phone_number     ?: $inv->phone_number;
+        $user->address           = $user->address          ?: $inv->address;
+        if (empty($user->primary_branch_id)) {
+            $user->primary_branch_id = $inv->branch_id;
         }
-        
-        return [
-            'total' => $query->count(),
-            'pending' => $query->where('status', Invitation::STATUS_PENDING)->count(),
-            'sent' => $query->where('status', Invitation::STATUS_SENT)->count(),
-            'accepted' => $query->where('status', Invitation::STATUS_ACCEPTED)->count(),
-            'expired' => $query->where('status', Invitation::STATUS_EXPIRED)->count(),
-            'cancelled' => $query->where('status', Invitation::STATUS_CANCELLED)->count(),
+        $user->save();
+
+        // Attach to branch (pivot) and assign role/permissions
+        if (method_exists($user, 'branches')) {
+            $user->branches()->syncWithoutDetaching([$inv->branch_id]);
+        }
+        $this->assignScopedRoleAndPermissions($user, $inv);
+
+        $inv->status = InvitationStatus::USED;
+        $inv->accepted_at = now();
+        $inv->save();
+
+        return ['user_id' => $user->id, 'email' => $user->email];
+    }
+
+    public function canInviteToBranch(User $inviter, Branch $targetBranch): bool
+    {
+        if ($inviter->hasRole('super-admin')) return true;
+
+        // company-admin (admin-empresa): same company
+        if ($inviter->hasRole('company-admin') || $inviter->hasRole('admin-empresa')) {
+            return $inviter->branches()->whereHas('subsidiary.company', function ($q) use ($targetBranch) {
+                $q->where('companies.id', $targetBranch->subsidiary->company_id);
+            })->exists();
+        }
+
+        // subsidiary-admin (jefe-subempresa): same subsidiary
+        if ($inviter->hasRole('subsidiary-admin') || $inviter->hasRole('jefe-subempresa')) {
+            return $inviter->branches()->where('subsidiary_id', $targetBranch->subsidiary_id)->exists();
+        }
+
+        // branch-admin (jefe-sucursal): same branch only
+        if ($inviter->hasRole('branch-admin') || $inviter->hasRole('jefe-sucursal')) {
+            return $inviter->branches()->whereKey($targetBranch->id)->exists();
+        }
+
+        return false;
+    }
+
+    private function normalizeRoleName(string $roleName): ?string
+    {
+        $map = [
+            'admin-empresa'   => 'company-admin',
+            'jefe-subempresa' => 'subsidiary-admin',
+            'jefe-sucursal'   => 'branch-admin',
+            'company-admin'   => 'company-admin',
+            'subsidiary-admin'=> 'subsidiary-admin',
+            'branch-admin'    => 'branch-admin',
+            'super-admin'     => 'super-admin',
         ];
+        $key = strtolower(trim($roleName));
+        return $map[$key] ?? null;
     }
-    
-    /**
-     * Validaciones privadas
-     */
-    private function validateInvitationData(array $data): void
+
+    private function assignScopedRoleAndPermissions(User $user, Invitation $inv): void
     {
-        $validator = Validator::make($data, [
-            'email' => 'required|email',
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'rut' => 'nullable|string|unique:users,rut',
-            'position' => 'nullable|string|max:255',
-            'phone_number' => 'nullable|string|max:20',
-            'invited_by' => 'required|exists:users,id',
-            'company_id' => 'required|exists:companies,id',
-            'subsidiary_id' => 'nullable|exists:subsidiaries,id',
-            'branch_id' => 'required|exists:branches,id',
-            'role_name' => 'required|exists:roles,name',
-            'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,name'
-        ]);
-        
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
+        if (method_exists($user, 'assignRole')) {
+            $user->assignRole($inv->role_name);
+        }
+        // Example (if you use scope_roles):
+        // app(ContextualRoleService::class)->assign($user, $inv->role_name, 'branch', $inv->branch_id);
+
+        if (!empty($inv->permissions) && method_exists($user, 'syncPermissions')) {
+            $user->syncPermissions($inv->permissions);
         }
     }
-    
-    private function validateOrganizationalData(array $data): void
+
+    private function buildActivationUrl(string $token): string
     {
-        $company = Company::find($data['company_id']);
-        $branch = Branch::find($data['branch_id']);
-        
-        if (!$company || !$branch) {
-            throw new \Exception('Empresa o sucursal no válida');
+        // If you set FRONTEND_ACTIVATION_URL='https://.../activate?token={token}',
+        // this will replace {token} with the real token.
+        $tpl = config('app.frontend_activation_url');
+        if ($tpl && str_contains($tpl, '{token}')) {
+            return str_replace('{token}', $token, $tpl);
         }
-        
-        // Verificar que la sucursal pertenece a la empresa
-        if ($branch->subsidiary->company_id !== $company->id) {
-            throw new \Exception('La sucursal no pertenece a la empresa especificada');
-        }
-        
-        // Si se especifica subsidiary, validar coherencia
-        if (!empty($data['subsidiary_id'])) {
-            if ($branch->subsidiary_id !== $data['subsidiary_id']) {
-                throw new \Exception('La sucursal no pertenece a la filial especificada');
-            }
-        }
+        // Backend fallback (renderizado por Laravel):
+        return url('/usuarios/activar/'.$token);
     }
 }

@@ -30,4 +30,12 @@ class UserPolicy
     {
         return $user->hasPermissionTo('user.delete');
     }
+
+    public function invite(User $user): bool
+    {
+        return $user->hasAnyRole([
+            'super-admin','company-admin','subsidiary-admin', 'branch-admin'
+        ]);
+    }
+
 }

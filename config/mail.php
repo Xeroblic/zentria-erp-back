@@ -96,7 +96,6 @@ return [
             ],
             'retry_after' => 60,
         ],
-
     ],
 
     /*
@@ -115,4 +114,10 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+
+    'markdown' => [
+        'theme' => 'erp',
+        'paths' => [resource_path('views/vendor/mail')],
+    ],
+    
 ];

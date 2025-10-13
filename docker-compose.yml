@@ -30,7 +30,6 @@ services:
       db:
         condition: service_healthy
 
-
   db:
     image: postgres:16
     container_name: erp-db
@@ -57,6 +56,13 @@ services:
       retries: 20
     volumes:
       - db-data:/var/lib/postgresql/data
+
+  mailpit:
+      image: axllent/mailpit
+      ports:
+        - "8025:8025"  # UI
+        - "1025:1025"  # SMTP
+      restart: unless-stopped
 
 volumes:
   db-data:
