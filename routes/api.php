@@ -159,6 +159,7 @@ require __DIR__ . '/apis/products.php';
 require __DIR__ . '/apis/categories.php';
 require __DIR__ . '/apis/productAttributes.php';
 require __DIR__ . '/apis/branchMedia.php';
+require __DIR__ . '/apis/userAvatar.php';
 
 
 // ===============================================

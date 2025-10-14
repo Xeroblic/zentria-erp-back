@@ -20,10 +20,17 @@ class BranchPathGenerator implements PathGenerator
 
     public function getPath(Media $media): string
     {
-        $branchId = $this->branchIdFrom($media);
-        $type = class_basename($media->model_type ?? 'Unknown');
+        // leer custom_property 'branch_id'
+        $branchId = $media->getCustomProperty('branch_id');
 
-        return "media/branch-{$branchId}/{$type}/{$media->model_id}/";
+        // si no existe -> global
+        $branchFolder = $branchId ? "branch-{$branchId}" : 'global-media';
+
+        $modelType = strtolower(class_basename($media->model_type));
+        $modelId   = $media->model_id;
+
+        // storage/app/public/media/branch-.../User/{id}/
+        return "media/{$branchFolder}/{$modelType}/{$modelId}/";
     }
 
     public function getPathForConversions(Media $media): string

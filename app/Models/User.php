@@ -6,10 +6,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class User extends Authenticatable implements JWTSubject
+
+class User extends Authenticatable implements JWTSubject , HasMedia
 {
-    use HasRoles;
+    use HasRoles, InteractsWithMedia;
 
     protected $guard_name = 'api';
 
@@ -277,6 +281,35 @@ class User extends Authenticatable implements JWTSubject
         $this->save();
     }
 
+    /* IMAGES */
 
+    public function registerMediaCollections(): void
+    {
+        // Colección única para foto de perfil
+        $this->addMediaCollection('avatar')
+            ->singleFile()        // garantiza una sola imagen
+            ->useDisk('public');  // debe resolver a storage/app/public + storage:link
+    }
+
+    public function registerMediaConversions(Media $media = null): void
+    {
+        // Conversión rápida para UI (no-queued si quieres previsualización inmediata)
+        $this->addMediaConversion('avatar_sm')
+            ->width(128)->height(128)
+            ->nonQueued();
+
+        $this->addMediaConversion('avatar_md')
+            ->width(256)->height(256);
+
+        $this->addMediaConversion('avatar_lg')
+            ->width(512)->height(512);
+    }
+
+    // Accesor conveniente, usa md por defecto y placeholder si no hay avatar
+    public function getAvatarUrlAttribute(): string
+    {
+        $url = $this->getFirstMediaUrl('avatar', 'avatar_md');
+        return $url ?: asset('images/avatar-placeholder.png');
+    }
 
 }

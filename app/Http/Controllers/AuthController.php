@@ -228,6 +228,21 @@ class AuthController extends Controller
             'personalization'
         );
 
+        $avatarMedia = $user->getFirstMedia('avatar') ?: null;
+
+        $avatar = [
+            'exists'       => (bool) $avatarMedia,
+            'original_url' => $avatarMedia ? $avatarMedia->getUrl() : null,
+            'sm'           => $user->getFirstMediaUrl('avatar', 'avatar_sm'),
+            'md'           => $user->getFirstMediaUrl('avatar', 'avatar_md'),
+            'lg'           => $user->getFirstMediaUrl('avatar', 'avatar_lg'),
+            // opcionalmente, metadata útil:
+            'media_id'     => $avatarMedia?->id,
+            'file_name'    => $avatarMedia?->file_name,
+            'mime_type'    => $avatarMedia?->mime_type,
+            'size'         => $avatarMedia?->size,
+        ];
+
         return response()->json([
             'user' => [
                 'pk'                 => $user->id,
@@ -241,7 +256,7 @@ class AuthController extends Controller
                 'genero'             => $user->gender,
                 'fecha_nacimiento'   => null,
                 'is_staff'           => $user->hasAnyRole(['super-admin', 'company-admin']),
-                'image'              => null,
+                'image'              => $avatar,
                 'estado_civil'       => null,
                 'nacionalidad'       => null,
                 'fecha_ingreso'      => optional($user->payslip)->entry_date,
