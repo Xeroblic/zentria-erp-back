@@ -21,6 +21,7 @@ class BranchMediaController extends Controller
 
         $media = $branch->addMediaFromRequest('file')
             ->withCustomProperties([
+                'branch_id' => $branch->id,
                 'alt'  => $request->input('alt_text'),
                 'tags' => $request->input('tags', []),
             ])->toMediaCollection('library');
@@ -192,6 +193,7 @@ class BranchMediaController extends Controller
         $new = $model->addMediaFromStream($stream)
             ->usingFileName($asset->file_name)
             ->withCustomProperties([
+                'branch_id' => $branch->id,
                 'alt'  => $alt ?? $asset->getCustomProperty('alt'),
                 'sort' => $sort,
                 'src_library_id' => $asset->id,
@@ -287,6 +289,7 @@ class BranchMediaController extends Controller
             // Subir directo
             $m = $model->addMedia($file)
                 ->withCustomProperties([
+                    'branch_id' => $branch->id,
                     'alt'  => $alt,
                     'sort' => (int)$sort,
                     'src_upload' => 'direct-batch',
