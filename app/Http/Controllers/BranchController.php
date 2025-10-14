@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Branch;
+use App\Http\Resources\BranchResource;
 
 class BranchController extends Controller
 {
@@ -13,8 +14,9 @@ class BranchController extends Controller
         $branch = Branch::findOrFail($id);
         $this->authorize('view', $branch);
 
-        return response()->json($branch);
+        return new BranchResource($branch);
     }
+
     /* Se agrega para dar solución a error al hacer un post a branch, en caso de no necesitarse se elimina método + endpoint */
     public function store(Request $request)
     {
