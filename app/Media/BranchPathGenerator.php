@@ -22,7 +22,7 @@ class BranchPathGenerator implements PathGenerator
     {
         // leer custom_property 'branch_id'
         $branchId = $media->getCustomProperty('branch_id');
-
+        
         // si no existe -> global
         $branchFolder = $branchId ? "branch-{$branchId}" : 'global-media';
 
