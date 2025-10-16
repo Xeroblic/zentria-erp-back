@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('rut')->unique();
             $table->string('phone_number')->nullable();
             $table->string('address')->nullable();
+            $table->unsignedInteger('commune_id')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -30,6 +31,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->timestamps();
 
+            $table->foreign('commune_id')->references('id')->on('communes')->onDelete('set null');
             $table->foreign('primary_branch_id')->references('id')->on('branches')->onDelete('set null');
         });
     }

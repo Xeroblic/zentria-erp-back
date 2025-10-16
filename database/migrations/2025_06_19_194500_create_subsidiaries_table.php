@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('subsidiary_website')->nullable();
             $table->string('subsidiary_phone')->nullable();
             $table->string('subsidiary_address')->nullable();
+            $table->unsignedInteger('commune_id')->nullable();
             $table->string('subsidiary_email')->unique();
             $table->timestamp('subsidiary_created_at')->nullable();
             $table->timestamp('subsidiary_updated_at')->nullable();
@@ -27,6 +28,8 @@ return new class extends Migration
             $table->string('subsidiary_manager_email')->unique();
             $table->boolean('subsidiary_status')->default(true);
             $table->timestamps(); 
+
+            $table->foreign('commune_id')->references('id')->on('communes')->onDelete('set null');
         });
     }
 

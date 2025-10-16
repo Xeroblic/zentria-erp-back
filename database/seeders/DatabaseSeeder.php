@@ -9,6 +9,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            // Migraciones de todas las comunas y regiones de chile -> esto no debería cambiar. Pero si se necesitan cambios aplicar al seeder para mantener
+            // persistencia de datos
+            RegionSeeder::class,
+            ProvinceSeeder::class,
+            CommuneSeeder::class,
+
             // Orden importante: primero roles y permisos
             RolesAndPermissionsSeeder::class,
             FixPermissionGuardSeeder::class,

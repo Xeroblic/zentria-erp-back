@@ -29,6 +29,7 @@ class UpdateCompanyRequest extends FormRequest
             'business_activity' => 'nullable|string|max:255',
             'representative_name' => 'nullable|string|max:100',
             'company_address' => 'nullable|string|max:255',
+            'commune_id' => 'nullable|integer|exists:communes,id',
             'legal_name' => 'nullable|string|max:100',
             'company_logo' => 'nullable|string|max:255',
         ];

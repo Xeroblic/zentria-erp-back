@@ -16,6 +16,7 @@ class Branch extends Model Implements HasMedia
         'subsidiary_id',
         'branch_name',
         'branch_address',
+        'commune_id',
         'branch_phone',
         'branch_email',
         'branch_status',
