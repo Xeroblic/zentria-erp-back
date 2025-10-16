@@ -13,6 +13,7 @@ class Subsidiary extends Model
         'subsidiary_website',
         'subsidiary_phone',
         'subsidiary_address',
+        'commune_id',
         'subsidiary_email',
         'subsidiary_created_at',
         'subsidiary_updated_at',

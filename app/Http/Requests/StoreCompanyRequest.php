@@ -24,6 +24,7 @@ class StoreCompanyRequest extends FormRequest
             'company_phone' => 'nullable|string|max:20',
             'representative_name' => 'nullable|string|max:100',
             'company_address' => 'nullable|string|max:255',
+            'commune_id' => 'nullable|integer|exists:communes,id',
             'business_activity' => 'nullable|string|max:255',
             'legal_name' => 'nullable|string|max:100',
             'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',

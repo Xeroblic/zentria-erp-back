@@ -13,6 +13,7 @@ class BranchResource extends JsonResource
             'subsidiary_id' => $this->subsidiary_id,
             'branch_name' => $this->branch_name,
             'branch_address' => $this->branch_address,
+            'commune_id' => $this->commune_id,
             'branch_phone' => $this->branch_phone,
             'branch_email' => $this->branch_email,
             'branch_status' => $this->branch_status,

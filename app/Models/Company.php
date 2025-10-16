@@ -14,6 +14,7 @@ class Company extends Model
         'representative_name',
         'contact_email',
         'company_address',
+        'commune_id',
         'business_activity',
         'legal_name',
         'company_logo',

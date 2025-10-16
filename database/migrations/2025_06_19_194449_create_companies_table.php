@@ -20,11 +20,14 @@ return new class extends Migration
             $table->string('representative_name')->nullable();
             $table->string('contact_email')->unique();
             $table->string('company_address')->nullable();
+            $table->unsignedInteger('commune_id')->nullable();
             $table->string('business_activity')->nullable();
             $table->string('legal_name')->nullable();
             $table->string('company_logo')->nullable();
             $table->boolean('is_active')->default(true);
             $table->string('company_type')->nullable();
+
+            $table->foreign('commune_id')->references('id')->on('communes')->onDelete('set null');
             $table->timestamps();
         });
     }

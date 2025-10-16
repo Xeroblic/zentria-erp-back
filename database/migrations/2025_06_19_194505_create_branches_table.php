@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('subsidiary_id');
             $table->string('branch_name');
             $table->string('branch_address');
+            $table->unsignedInteger('commune_id')->nullable();
             $table->string('branch_phone');
             $table->string('branch_email');
             $table->timestamp('branch_created_at')->nullable();
@@ -29,6 +30,7 @@ return new class extends Migration
             $table->timestamps();
             
             $table->foreign('subsidiary_id')->references('id')->on('subsidiaries')->onDelete('cascade');
+            $table->foreign('commune_id')->references('id')->on('communes')->onDelete('set null');
         });
     }
 

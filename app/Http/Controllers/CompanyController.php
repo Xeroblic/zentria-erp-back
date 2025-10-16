@@ -248,6 +248,7 @@ class CompanyController extends Controller
             'company_phone' => 'sometimes|string|max:20',
             'company_email' => 'sometimes|email|max:255',
             'company_address' => 'sometimes|string|max:500',
+            'commune_id' => 'sometimes|integer|exists:communes,id',
             'company_website' => 'sometimes|url|max:255',
             'company_logo' => 'sometimes|string', // Para base64
             'company_description' => 'sometimes|string|max:1000',
