@@ -20,6 +20,7 @@ class StoreUserRequest extends FormRequest
             'phone_number'      => ['nullable','string','max:30'],
             'address'           => ['nullable','string','max:255'],
             'email'             => ['required','email','max:150','unique:users,email'],
+            'date_of_birth'     => ['nullable','date'],
             'password'          => ['required','string','min:8'],
             'is_active'         => ['sometimes','boolean'],
             'gender'            => ['nullable', Rule::in(['male','female','other'])], // ajusta a tus valores
