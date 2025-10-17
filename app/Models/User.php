@@ -30,6 +30,7 @@ class User extends Authenticatable implements JWTSubject , HasMedia
     protected $casts = [
         'is_active' => 'boolean',
         'email_verified_at' => 'datetime',
+        'commune_id' => 'integer',
     ];
 
     /* -------------------------------------------------
@@ -40,6 +41,11 @@ class User extends Authenticatable implements JWTSubject , HasMedia
     public function primaryBranch()
     {
         return $this->belongsTo(Branch::class, 'primary_branch_id');
+    }
+
+    public function commune()
+    {
+        return $this->belongsTo(Commune::class);
     }
 
     // Pertenencia real M:N
