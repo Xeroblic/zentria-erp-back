@@ -44,14 +44,12 @@ class RegionController extends Controller
 
     public function show(Request $request, int $id)
     {
-        $with = $this->parseWith($request);
-
+        $with = array_filter(explode(',', (string) $request->query('with')));
         $query = Region::query();
-
         if (!empty($with)) {
             $query->with($with);
         }
-
         return $query->findOrFail($id);
     }
 }
+
