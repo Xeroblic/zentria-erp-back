@@ -160,6 +160,7 @@ require __DIR__ . '/apis/categories.php';
 require __DIR__ . '/apis/productAttributes.php';
 require __DIR__ . '/apis/branchMedia.php';
 require __DIR__ . '/apis/userAvatar.php';
+require __DIR__ . '/apis/locations.php';
 
 
 // ===============================================
@@ -205,4 +206,3 @@ Route::middleware(['auth:api'])->prefix('falabella')->group(function () {
 // Route::middleware(['auth:api'])->prefix('mercadolibre')->group(function () {
 //     // Rutas de MercadoLibre
 // });
-

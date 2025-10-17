@@ -225,7 +225,8 @@ class AuthController extends Controller
             'branch.subsidiary.company',
             'scopeRoles.role',
             'payslips',
-            'personalization'
+            'personalization',
+            'commune.province.region'
         );
 
         $avatarMedia = $user->getFirstMedia('avatar') ?: null;
@@ -264,9 +265,9 @@ class AuthController extends Controller
                 'fono_fijo'          => null,
                 'cargo'              => $user->position,
                 'direccion'          => $user->address,
-                'region'             => null,
-                'provincia'          => null,
-                'comuna'             => null,
+                'region'             => optional(optional(optional($user->commune)->province)->region)->name,
+                'provincia'          => optional(optional($user->commune)->province)->name,
+                'comuna'             => optional($user->commune)->name,
                 'personalizacion'    => $user->personalization ? [
                     'id'                  => $user->personalization->id,
                     'fecha_creacion'      => $user->personalization->created_at,

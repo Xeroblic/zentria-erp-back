@@ -1,11 +1,12 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Province extends Model
+class Region extends Model
 {
 
     use HasFactory;
@@ -17,22 +18,19 @@ class Province extends Model
     protected $fillable = [
         'id',
         'name',
-        'region_id',
+        'ordinal',
+        'geographic_order',
     ];
 
     protected $casts = [
         'id' => 'integer',
-        'region_id' => 'integer',
+        'geographic_order' => 'integer',
     ];
 
-    public function region()
-    {
-        return $this->belongsTo(Region::class);
-    }
 
-    public function communes()
+    public function provinces()
     {
-        return $this->hasMany(Commune::class);
+        return $this->hasMany(Province::class);
     }
-
+    
 }
