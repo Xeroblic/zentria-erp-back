@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Http\Resources\CompanyResource;
+use App\Http\Resources\SubsidiaryBriefResource;
 use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -209,14 +210,18 @@ class CompanyController extends Controller
 
         $this->authorize('view', $company);
 
-        $subsidiaries = $company->subsidiaries()->with(['branches.commune', 'commune'])->get();
+        // Cargar solo lo necesario: ramas con su comuna
+        $subsidiaries = $company->subsidiaries()
+            ->with(['branches.commune'])
+            ->get();
+
+        // Filtrar por las subempresas que el usuario puede ver
+        $visibleSubsidiaries = $subsidiaries
+            ->filter(fn($s) => $user->canAccessEntity('subsidiary', $s->id))
+            ->values();
 
         return response()->json([
-            'subempresas' => $subsidiaries,
-            'empresa' => [
-                'id' => $company->id,
-                'nombre' => $company->company_name
-            ]
+            'subempresas' => SubsidiaryBriefResource::collection($visibleSubsidiaries),
         ]);
     }
 
