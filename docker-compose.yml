@@ -21,8 +21,7 @@ services:
       DB_PASSWORD: root
       RUN_MIGRATIONS: "true"
       RUN_SEED: "true"
-      RUN_DEMO_SEED: "true"
-      RUN_TESTS: "true"
+      RUN_TESTS: "false"
     ports:
       - "8000:8000"
     volumes:
