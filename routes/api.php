@@ -167,39 +167,39 @@ require __DIR__ . '/apis/locations.php';
 // RUTAS DE SERVICIOS EXTERNOS
 // ===============================================
 
-// Rutas de Falabella (requieren autenticación)
-Route::middleware(['auth:api'])->prefix('falabella')->group(function () {
-    // Endpoint de diagnóstico (temporal para debug)
-    Route::get('/_mode', function (\App\Services\Falabella\FalabellaClient $client) {
-        return response()->json([
-            'mode' => $client instanceof \App\Services\Falabella\FalabellaMockService ? 'mock' : 'live',
-            'use_mock_config' => config('falabella.use_mock'),
-            'config_dump' => [
-                'base_url' => config('falabella.base_url'),
-                'user_id' => config('falabella.user_id') ? 'SET' : 'NOT_SET',
-                'api_key' => config('falabella.api_key') ? 'SET' : 'NOT_SET',
-            ]
-        ]);
-    });
+// // Rutas de Falabella (requieren autenticación)
+// Route::middleware(['auth:api'])->prefix('falabella')->group(function () {
+//     // Endpoint de diagnóstico (temporal para debug)
+//     Route::get('/_mode', function (\App\Services\Falabella\FalabellaClient $client) {
+//         return response()->json([
+//             'mode' => $client instanceof \App\Services\Falabella\FalabellaMockService ? 'mock' : 'live',
+//             'use_mock_config' => config('falabella.use_mock'),
+//             'config_dump' => [
+//                 'base_url' => config('falabella.base_url'),
+//                 'user_id' => config('falabella.user_id') ? 'SET' : 'NOT_SET',
+//                 'api_key' => config('falabella.api_key') ? 'SET' : 'NOT_SET',
+//             ]
+//         ]);
+//     });
     
-    // Consultas de productos y stock
-    Route::get('/products', [FalabellaController::class, 'products']);
-    Route::get('/stock', [FalabellaController::class, 'stock']);
-    Route::get('/categories', [FalabellaController::class, 'categories']);
+//     // Consultas de productos y stock
+//     Route::get('/products', [FalabellaController::class, 'products']);
+//     Route::get('/stock', [FalabellaController::class, 'stock']);
+//     Route::get('/categories', [FalabellaController::class, 'categories']);
     
-    // Datos de ventas y análisis
-    Route::get('/sales', [FalabellaController::class, 'sales']);
-    Route::get('/orders', [FalabellaController::class, 'orders']);
-    Route::get('/low-stock', [FalabellaController::class, 'lowStock']);
-    Route::get('/best-sellers', [FalabellaController::class, 'bestSellers']);
-    Route::get('/inventory-summary', [FalabellaController::class, 'inventorySummary']);
+//     // Datos de ventas y análisis
+//     Route::get('/sales', [FalabellaController::class, 'sales']);
+//     Route::get('/orders', [FalabellaController::class, 'orders']);
+//     Route::get('/low-stock', [FalabellaController::class, 'lowStock']);
+//     Route::get('/best-sellers', [FalabellaController::class, 'bestSellers']);
+//     Route::get('/inventory-summary', [FalabellaController::class, 'inventorySummary']);
     
-    // Actualizaciones (requieren permisos especiales)
-    Route::middleware('can:falabella.update')->group(function () {
-        Route::put('/products/{sku}/price', [FalabellaController::class, 'updatePrice']);
-        Route::put('/products/{sku}/stock', [FalabellaController::class, 'updateStock']);
-    });
-});
+//     // Actualizaciones (requieren permisos especiales)
+//     Route::middleware('can:falabella.update')->group(function () {
+//         Route::put('/products/{sku}/price', [FalabellaController::class, 'updatePrice']);
+//         Route::put('/products/{sku}/stock', [FalabellaController::class, 'updateStock']);
+//     });
+// });
 
 
 // TODO: Aquí puedes agregar otros servicios como MercadoLibre, Amazon, etc.
