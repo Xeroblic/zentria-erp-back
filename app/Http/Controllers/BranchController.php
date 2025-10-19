@@ -5,9 +5,29 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Branch;
 use App\Http\Resources\BranchResource;
+use Illuminate\Support\Facades\Auth;
 
 class BranchController extends Controller
 {
+    public function index(Request $request)
+    {
+        $this->authorize('viewAny', Branch::class);
+
+        $query = Branch::visibleTo(Auth::user());
+
+        // Filtros opcionales
+        if ($request->filled('subsidiary_id')) {
+            $query->where('subsidiary_id', (int) $request->query('subsidiary_id'));
+        }
+
+        // Eager loading opcional: ?with=commune,subsidiary
+        $with = array_filter(explode(',', (string) $request->query('with')));
+        if (!empty($with)) {
+            $query->with($with);
+        }
+
+        return BranchResource::collection($query->get());
+    }
 
     public function show($id)
     {

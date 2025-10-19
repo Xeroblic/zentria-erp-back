@@ -32,6 +32,9 @@ class DatabaseSeeder extends Seeder
             
             // Datos de ejemplo catálogo - productos, marcas, categorías
             DemoCatalogSeeder::class,
+
+            // Asignaciones de acceso para pruebas de jerarquía + granularidad
+            AccessContextDemoSeeder::class,
         ]);
     }
 

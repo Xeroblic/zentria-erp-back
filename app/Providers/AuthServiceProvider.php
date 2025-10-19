@@ -4,12 +4,16 @@ namespace App\Providers;
 
 use App\Models\Branch;
 use App\Models\User;
+use App\Models\Company;
+use App\Models\Subsidiary;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\UserPersonalization;
 use App\Policies\BranchPolicy;
 use App\Policies\UserPersonalizationPolicy;
 use App\Policies\UserPolicy;
+use App\Policies\CompanyPolicy;
+use App\Policies\SubsidiaryPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -22,6 +26,8 @@ class AuthServiceProvider extends ServiceProvider
         UserPersonalization::class => UserPersonalizationPolicy::class,
         User::class => UserPolicy::class,
         Branch::class => BranchPolicy::class,
+        Company::class => CompanyPolicy::class,
+        Subsidiary::class => SubsidiaryPolicy::class,
         Product::class => ProductPolicy::class,
         Brand::class => BrandPolicy::class,
         Category::class => CategoryPolicy::class,

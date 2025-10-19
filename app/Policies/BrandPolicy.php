@@ -8,28 +8,25 @@ use App\Models\User;
 class BrandPolicy
 {
     public function viewAny(User $user, Branch $branch): bool
-    {   if ($user->hasRole('super-admin')) return true;
-        if (!$user->hasPermissionTo('view-brand')) return false;
+    {
+        if ($user->hasRole('super-admin')) return true;
         return $user->canAccessEntity('branch', $branch->id);
     }
     public function view(User $user, Brand $brand): bool
-    {   if ($user->hasRole('super-admin')) return true;
-        if (!$user->hasPermissionTo('view-brand')) return false;
+    {
+        if ($user->hasRole('super-admin')) return true;
         return $user->canAccessEntity('branch', $brand->branch_id);
     }
     public function create(User $user, Branch $branch): bool
     {   if ($user->hasRole('super-admin')) return true;
-        if (!$user->hasPermissionTo('create-brand')) return false;
-        return $user->canAccessEntity('branch', $branch->id);
+        return $user->hasPermissionTo('create-brand') && $user->canAccessEntity('branch', $branch->id);
     }
     public function update(User $user, Brand $brand): bool
     {   if ($user->hasRole('super-admin')) return true;
-        if (!$user->hasPermissionTo('edit-brand')) return false;
-        return $user->canAccessEntity('branch', $brand->branch_id);
+        return $user->hasPermissionTo('edit-brand') && $user->canAccessEntity('branch', $brand->branch_id);
     }
     public function delete(User $user, Brand $brand): bool
     {   if ($user->hasRole('super-admin')) return true;
-        if (!$user->hasPermissionTo('delete-brand')) return false;
-        return $user->canAccessEntity('branch', $brand->branch_id);
+        return $user->hasPermissionTo('delete-brand') && $user->canAccessEntity('branch', $brand->branch_id);
     }
 }

@@ -161,7 +161,10 @@ class CompanyController extends Controller
 
         $this->authorize('view', $company);
 
-        $subsidiaries = $company->subsidiaries()->with(['branches.commune', 'commune'])->get();
+        $subsidiaries = $company->subsidiaries()
+            ->visibleTo($user)
+            ->with(['branches.commune', 'commune'])
+            ->get();
 
         return response()->json([
             'subempresas' => $subsidiaries,
@@ -210,18 +213,14 @@ class CompanyController extends Controller
 
         $this->authorize('view', $company);
 
-        // Cargar solo lo necesario: ramas con su comuna
+        // Cargar solo lo necesario, y filtrar por acceso contextual del usuario
         $subsidiaries = $company->subsidiaries()
+            ->visibleTo($user)
             ->with(['branches.commune'])
             ->get();
 
-        // Filtrar por las subempresas que el usuario puede ver
-        $visibleSubsidiaries = $subsidiaries
-            ->filter(fn($s) => $user->canAccessEntity('subsidiary', $s->id))
-            ->values();
-
         return response()->json([
-            'subempresas' => SubsidiaryBriefResource::collection($visibleSubsidiaries),
+            'subempresas' => SubsidiaryBriefResource::collection($subsidiaries),
         ]);
     }
 

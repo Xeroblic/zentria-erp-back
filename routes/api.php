@@ -68,7 +68,7 @@ Route::middleware(['auth:api'])->group(function () {
         ->middleware('can:create-branch');
 
     Route::get('branches', [BranchController::class, 'index'])
-        ->middleware('can:view-branch');
+        ->middleware('can:viewAny,App\\Models\\Branch');
 
     Route::put('branches/{id}', [BranchController::class, 'update'])
         ->middleware('can:edit-branch');
@@ -112,7 +112,7 @@ Route::middleware(['auth:api'])->group(function () {
 
     /// Funciones relacionadas a las subempresas de una empresa
     Route::get('companies/{id}/subsidiaries', [CompanyController::class, 'subsidiaries'])
-        ->middleware('can:view-subsidiary')
+        ->middleware('can:viewAny,App\\Models\\Subsidiary')
         ->name('companies.subsidiaries');
     
     // Rutas dinámicas para la empresa del usuario actual (sin IDs hardcodeados)
@@ -121,7 +121,7 @@ Route::middleware(['auth:api'])->group(function () {
         ->name('my-company.show');
         
     Route::get('my-company/subsidiaries', [CompanyController::class, 'myCompanySubsidiaries'])
-        ->middleware('can:view-subsidiary')
+        ->middleware('can:viewAny,App\\Models\\Subsidiary')
         ->name('my-company.subsidiaries');
         
     Route::get('my-company/users', [CompanyController::class, 'myCompanyUsers'])
@@ -143,6 +143,7 @@ require __DIR__ . '/apis/companies.php';
 require __DIR__ . '/apis/subsidiary.php';
 require __DIR__ . '/apis/branch.php';
 require __DIR__ . '/apis/users.php';
+require __DIR__ . '/apis/access.php';
 require __DIR__ . '/apis/invitations.php';
 require __DIR__ . '/apis/brands.php';
 require __DIR__ . '/apis/productCategory.php';

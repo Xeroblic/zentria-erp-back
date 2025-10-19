@@ -92,6 +92,71 @@ class AdminController extends Controller
                     ];
                 });
 
+                // Accesos directos para UI (subsidiaries por scope_roles y branches por pivot)
+                $subsidiaryMemberIds = $user->scopeRoles
+                    ->where('scope_type', 'subsidiary')
+                    ->filter(function ($sr) { return $sr->role && $sr->role->name === 'subsidiary-member'; })
+                    ->pluck('scope_id')
+                    ->unique()
+                    ->values();
+                $subsidiaryAccess = [];
+                if ($subsidiaryMemberIds->isNotEmpty()) {
+                    $subs = \App\Models\Subsidiary::whereIn('id', $subsidiaryMemberIds)->with('company:id,company_name')->get(['id','subsidiary_name','company_id']);
+                    $subsidiaryAccess = $subs->map(function ($s) {
+                        return [
+                            'id' => $s->id,
+                            'name' => $s->subsidiary_name,
+                            'company' => [
+                                'id' => $s->company->id,
+                                'name' => $s->company->company_name,
+                            ],
+                            'source' => 'direct',
+                        ];
+                    });
+                }
+                $branchAccess = $user->branches->map(function ($b) {
+                    return [
+                        'id' => $b->id,
+                        'name' => $b->branch_name,
+                        'subsidiary' => [
+                            'id' => $b->subsidiary->id,
+                            'name' => $b->subsidiary->subsidiary_name,
+                        ],
+                        'source' => 'direct',
+                        'is_primary' => (bool) ($b->pivot->is_primary ?? false),
+                        'position' => $b->pivot->position ?? null,
+                    ];
+                });
+
+                // Visibles (heredados ∪ directos)
+                $visibleSubs = \App\Models\Subsidiary::visibleTo($user)
+                    ->with('company:id,company_name')
+                    ->get(['id','subsidiary_name','company_id'])
+                    ->map(function ($s) {
+                        return [
+                            'id' => $s->id,
+                            'name' => $s->subsidiary_name,
+                            'company' => [
+                                'id' => $s->company->id,
+                                'name' => $s->company->company_name,
+                            ],
+                        ];
+                    });
+
+                $visibleBranches = \App\Models\Branch::visibleTo($user)
+                    ->with('subsidiary:id,subsidiary_name')
+                    ->get(['id','branch_name','subsidiary_id'])
+                    ->map(function ($b) {
+                        return [
+                            'id' => $b->id,
+                            'name' => $b->branch_name,
+                            'subsidiary' => [
+                                'id' => $b->subsidiary->id,
+                                'name' => $b->subsidiary->subsidiary_name,
+                            ],
+                        ];
+                    });
+
                 // Verificar si puede ser editado por el usuario actual
                 $canEdit = $currentUser->hasRole('super-admin') || 
                           ($user->id !== $currentUser->id && !$user->hasRole('super-admin'));
@@ -129,6 +194,18 @@ class AdminController extends Controller
                     
                     // Roles contextuales 
                     'contextual_roles' => $contextualRoles,
+
+                    // Accesos directos (para UI de permisos)
+                    'access' => [
+                        'subsidiaries' => $subsidiaryAccess,
+                        'branches' => $branchAccess,
+                    ],
+
+                    // Visibilidad efectiva (directos ∪ heredados)
+                    'visible' => [
+                        'subsidiaries' => $visibleSubs,
+                        'branches' => $visibleBranches,
+                    ],
                     
                     // Permisos (directos + via roles)
                     'direct_permissions' => $user->permissions->pluck('name'),
@@ -218,6 +295,71 @@ class AdminController extends Controller
                 ];
             });
 
+            // Accesos directos para UI (subsidiaries por scope_roles y branches por pivot)
+            $subsidiaryMemberIds = $user->scopeRoles
+                ->where('scope_type', 'subsidiary')
+                ->filter(function ($sr) { return $sr->role && $sr->role->name === 'subsidiary-member'; })
+                ->pluck('scope_id')
+                ->unique()
+                ->values();
+            $subsidiaryAccess = [];
+            if ($subsidiaryMemberIds->isNotEmpty()) {
+                $subs = \App\Models\Subsidiary::whereIn('id', $subsidiaryMemberIds)->with('company:id,company_name')->get(['id','subsidiary_name','company_id']);
+                $subsidiaryAccess = $subs->map(function ($s) {
+                    return [
+                        'id' => $s->id,
+                        'name' => $s->subsidiary_name,
+                        'company' => [
+                            'id' => $s->company->id,
+                            'name' => $s->company->company_name,
+                        ],
+                        'source' => 'direct',
+                    ];
+                });
+            }
+            $branchAccess = $user->branches->map(function ($b) {
+                return [
+                    'id' => $b->id,
+                    'name' => $b->branch_name,
+                    'subsidiary' => [
+                        'id' => $b->subsidiary->id,
+                        'name' => $b->subsidiary->subsidiary_name,
+                    ],
+                    'source' => 'direct',
+                    'is_primary' => (bool) ($b->pivot->is_primary ?? false),
+                    'position' => $b->pivot->position ?? null,
+                ];
+            });
+
+            // Visibles (heredados ∪ directos)
+            $visibleSubs = \App\Models\Subsidiary::visibleTo($user)
+                ->with('company:id,company_name')
+                ->get(['id','subsidiary_name','company_id'])
+                ->map(function ($s) {
+                    return [
+                        'id' => $s->id,
+                        'name' => $s->subsidiary_name,
+                        'company' => [
+                            'id' => $s->company->id,
+                            'name' => $s->company->company_name,
+                        ],
+                    ];
+                });
+
+            $visibleBranches = \App\Models\Branch::visibleTo($user)
+                ->with('subsidiary:id,subsidiary_name')
+                ->get(['id','branch_name','subsidiary_id'])
+                ->map(function ($b) {
+                    return [
+                        'id' => $b->id,
+                        'name' => $b->branch_name,
+                        'subsidiary' => [
+                            'id' => $b->subsidiary->id,
+                            'name' => $b->subsidiary->subsidiary_name,
+                        ],
+                    ];
+                });
+
             // Verificar si puede ser editado por el usuario actual
             $canEdit = $currentUser->hasRole('super-admin') || 
                       ($user->id !== $currentUser->id && !$user->hasRole('super-admin'));
@@ -255,6 +397,21 @@ class AdminController extends Controller
                 
                 // Roles contextuales 
                 'contextual_roles' => $contextualRoles,
+                // Accesos directos (para UI de permisos)
+                'access' => [
+                    'subsidiaries' => $subsidiaryAccess,
+                    'branches' => $branchAccess,
+                ],
+                // Visibilidad efectiva (directos ∪ heredados)
+                'visible' => [
+                    'subsidiaries' => $visibleSubs,
+                    'branches' => $visibleBranches,
+                ],
+                // Accesos directos (para UI de permisos)
+                'access' => [
+                    'subsidiaries' => $subsidiaryAccess,
+                    'branches' => $branchAccess,
+                ],
                 
                 // Permisos (directos + via roles)
                 'direct_permissions' => $user->permissions->pluck('name'),

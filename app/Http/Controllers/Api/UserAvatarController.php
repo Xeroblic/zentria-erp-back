@@ -4,34 +4,36 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class UserAvatarController extends Controller
 {
-    // PUT /users/{user}/avatar
+    // POST /users/{user}/avatar
     public function update(Request $request, User $user)
     {
-        $this->authorize('update', $user); // Usa tu UserPolicy/BranchPolicy según corresponda
+        // Sin permisos especiales, pero restringido a su propio usuario (o super-admin)
+        $actor = Auth::user();
+        if (!$actor || (!$actor->hasRole('super-admin') && $actor->id !== $user->id)) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
-        $validated = $request->validate([
-            'avatar' => 'required|image|max:6048', // 6MB; ajusta a tu política
+        $request->validate([
+            'avatar' => 'required|image|max:6048',
         ]);
 
         $file = $request->file('avatar');
         $ext  = $file->getClientOriginalExtension();
 
-        // singleFile() reemplaza automáticamente el anterior
         $media = $user->addMediaFromRequest('avatar')
-            ->usingFileName("user-{$user->id}-".Str::uuid().".{$ext}")
-            // clave: marcar como global (sin branch)
+            ->usingFileName("user-{$user->id}-" . Str::uuid() . ".{$ext}")
             ->withCustomProperties([
-                'branch_id' => null,       // fuerza 'branch-global' en PathGenerator
-                'scope'     => 'global',   // metadato útil para auditoría
-                'kind'      => 'user-avatar'
+                'branch_id' => null,
+                'scope'     => 'global',
+                'kind'      => 'user-avatar',
             ])
             ->toMediaCollection('avatar');
 
-        // Persistir URL en la columna `image` para compatibilidad con front
         $urlSm = $user->getFirstMediaUrl('avatar', 'avatar_sm');
         $urlMd = $user->getFirstMediaUrl('avatar', 'avatar_md');
         $user->image = $urlMd ?: ($urlSm ?: $media->getUrl());
@@ -48,8 +50,6 @@ class UserAvatarController extends Controller
     // GET /users/{user}/avatar
     public function show(User $user)
     {
-        $this->authorize('view', $user);
-
         $media = $user->getFirstMedia('avatar');
 
         return response()->json([
@@ -65,10 +65,14 @@ class UserAvatarController extends Controller
     // DELETE /users/{user}/avatar
     public function destroy(User $user)
     {
-        $this->authorize('update', $user);
+        // Sin permisos especiales, pero restringido a su propio usuario (o super-admin)
+        $actor = Auth::user();
+        if (!$actor || (!$actor->hasRole('super-admin') && $actor->id !== $user->id)) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
         $user->clearMediaCollection('avatar');
-        $user->image = null; // limpiar valor persistido
+        $user->image = null;
         $user->save();
 
         return response()->json([
@@ -76,3 +80,4 @@ class UserAvatarController extends Controller
         ], 200);
     }
 }
+

@@ -8,10 +8,9 @@ Route::middleware(['auth:api'])->group(function () {
         ->middleware('can:create-subsidiary');
 
     Route::get('subsidiaries', [SubsidiaryController::class, 'index'])
-        ->middleware('can:view-subsidiary');
+        ->middleware('can:viewAny,App\\Models\\Subsidiary');
 
-    Route::get('subsidiaries/{id}', [SubsidiaryController::class, 'show'])
-        ->middleware('can:view-subsidiary');
+    Route::get('subsidiaries/{id}', [SubsidiaryController::class, 'show']);
 
     Route::put('subsidiaries/{id}', [SubsidiaryController::class, 'update'])
         ->middleware('can:edit-subsidiary');

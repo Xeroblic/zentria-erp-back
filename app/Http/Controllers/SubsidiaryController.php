@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Subsidiary;
 use App\Http\Resources\SubsidiaryResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SubsidiaryController extends Controller
 {
@@ -13,7 +14,8 @@ class SubsidiaryController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Subsidiary::query();
+        $this->authorize('viewAny', Subsidiary::class);
+        $query = Subsidiary::visibleTo(Auth::user());
 
         // Filtro opcional por empresa
         if ($request->filled('company_id')) {

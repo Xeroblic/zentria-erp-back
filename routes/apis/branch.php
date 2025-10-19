@@ -8,7 +8,7 @@ Route::middleware(['auth:api'])->group(function () {
         ->middleware('can:create-branch');
 
     Route::get('branches', [BranchController::class, 'index'])
-        ->middleware('can:view-branch');
+        ->middleware('can:viewAny,App\\Models\\Branch');
 
     Route::put('branches/{id}', [BranchController::class, 'update'])
         ->middleware('can:edit-branch');
@@ -16,8 +16,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::delete('branches/{id}', [BranchController::class, 'destroy'])
         ->middleware('can:delete-branch');
     
-    Route::get('branches/{id}', [BranchController::class, 'show'])
-        ->middleware('can:view-branch');
+    Route::get('branches/{id}', [BranchController::class, 'show']);
 
     // Actualizar solo la comuna de la sucursal
     Route::patch('branches/{id}/commune', [BranchController::class, 'updateCommune'])

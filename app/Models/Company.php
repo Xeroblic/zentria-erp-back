@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Company extends Model
 {
@@ -102,5 +103,30 @@ class Company extends Model
     public function scopeWithoutLogo($query)
     {
         return $query->whereNull('company_logo');
+    }
+
+    // Visibilidad por usuario: acceso directo por company-member o indirecto por pertenencia a branches
+    public function scopeVisibleTo($query, User $user)
+    {
+        if ($user->hasRole('super-admin')) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($user) {
+            // Company-member directo
+            $q->whereExists(function ($sq) use ($user) {
+                $sq->select(DB::raw(1))
+                    ->from('scope_roles as sr')
+                    ->join('roles as r', 'r.id', '=', 'sr.role_id')
+                    ->whereColumn('sr.scope_id', 'companies.id')
+                    ->where('sr.scope_type', 'company')
+                    ->where('r.name', 'company-member')
+                    ->where('sr.user_id', $user->id);
+            })
+            // O que el usuario tenga branches dentro de esta compañía
+            ->orWhereHas('subsidiaries.branches.users', function ($uq) use ($user) {
+                $uq->where('users.id', $user->id);
+            });
+        });
     }
 }
