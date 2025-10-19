@@ -1,61 +1,109 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+**Zentria ERP Back**
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+- Laravel 12 API backend con JWT y control de acceso por roles/permisos (Spatie).
+- Datos geográficos de Chile (regiones, provincias, comunas) + endpoints de consulta.
+- Gestión de empresas, subsidiarias y sucursales con relación a comuna.
+- Docker Compose para levantar el entorno; tests se ejecutan automáticamente al iniciar.
 
-## About Laravel
+**Requisitos**
+- Docker y Docker Compose (recomendado)
+- Alternativa sin Docker: PHP 8.2+, Composer, Postgres 16+, extensiones pdo_pgsql, gd, zip, bcmath
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Stack principal**
+- Autenticación: `tymon/jwt-auth`
+- Roles y permisos: `spatie/laravel-permission`
+- Media (sucursales): `spatie/laravel-medialibrary`
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Correr con Docker (recomendado)**
+- Configura `.env` (se copia de `.env.example` al iniciar si no existe). Variables relevantes ya están en `docker-compose.yml`:
+  - `DB_*` apuntan al servicio `db`
+  - `RUN_MIGRATIONS=true`, `RUN_SEED=true`, `RUN_TESTS=true`
+- Levantar servicios:
+  - `docker compose up -d`
+- ¿Qué hace el entrypoint del servicio `app`?
+  - Espera a Postgres → instala dependencias → limpia cachés
+  - Genera `APP_KEY` y `JWT_SECRET` si faltan
+  - Ejecuta migraciones (`php artisan migrate --force`)
+  - Ejecuta seeders (`php artisan db:seed --force`) si `RUN_SEED=true`
+  - Ejecuta tests (`php artisan test`) si `RUN_TESTS=true`
+    - Mensajes:
+      - Éxito: `✅ X tests probados y ejecutados correctamente.`
+      - Error: `❌ Tests fallaron. Resumen: ...` y detiene el contenedor
+  - Levanta servidor embebido en `http://localhost:8000`
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Usuarios de ejemplo (seed)**
+- Super admin (siempre cámbialo en producción):
+  - Email: `rbarrientos@tikinet.cl`
+  - Password: `Hola2025!`
 
-## Learning Laravel
+**Migraciones y Seeders**
+- Estructura geográfica: `regions`, `provinces`, `communes`
+- Empresas y organización: `companies`, `subsidiaries`, `branches`, `users`
+- Seeders clave (ordenados en `DatabaseSeeder`):
+  - `RegionSeeder`, `ProvinceSeeder`, `CommuneSeeder`
+  - `RolesAndPermissionsSeeder`, `FixPermissionGuardSeeder`
+  - `EmpresaSeeder`, `SuperAdminSeeder`, `UsuarioBasicoSeeder`
+  - Demo: `MultiCompanyExampleSeeder`, `DemoCatalogSeeder`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**Autenticación**
+- Registro/login via JWT (`/api/auth/register`, `/api/auth/login`)
+- Perfil: `/api/auth/perfil` incluye `commune.province.region`
+- Token refresh: `/api/auth/refresh` (middleware `auth:api`)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+**Permisos y roles (Spatie)**
+- Guard principal `api`
+- Middlewares disponibles:
+  - `auth:api`, `can:<permiso>`, `role:<rol>`, `permission:<permiso>`
+- Ejemplos de permisos: `view-company`, `edit-company`, `create-branch`, `view-user`
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Ubicación: comunas**
+- Endpoints públicos (solo GET):
+  - `GET /api/locations/communes?province_id=...&with=province,province.region`
+  - `GET /api/locations/communes/{id}?with=province.region`
+- Usuarios pueden actualizar su comuna:
+  - `PATCH /api/users/{id}/commune` (propio usuario o permiso `user.edit`)
+  - `PATCH /api/me/commune`
 
-## Laravel Sponsors
+**Empresas, subsidiarias y sucursales**
+- POST/PUT aceptan `commune_id` como opcional.
+- Endpoints aislados para actualizar solo la comuna:
+  - `PATCH /api/companies/{id}/commune` (permiso `edit-company`)
+  - `PATCH /api/subsidiaries/{id}/commune` (permiso `edit-subsidiary`)
+  - `PATCH /api/branches/{id}/commune` (permiso `edit-branch`)
+- Parámetros comunes:
+  - Body: `{ "commune_id": 13101 }` o `null` para limpiar
+  - Query `?with=commune` para incluir objeto relacionado
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+**Probar sin Docker (local)**
+- Requisitos instalados + Postgres accesible
+- Pasos:
+  - `cp .env.example .env` y configura `DB_*`
+  - `composer install`
+  - `php artisan key:generate`
+  - `php artisan jwt:secret`
+  - `php artisan migrate --seed`
+  - `php artisan serve`
 
-### Premium Partners
+**Tests**
+- Ejecutar manualmente: `php artisan test`
+- Base de datos de test: SQLite en memoria (ver `phpunit.xml`)
+- Suites agregadas:
+  - `tests/Feature/PermissionsTest.php`
+  - `tests/Feature/UpdateCommuneEndpointsTest.php`
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+**Estructura de carpetas**
+- `app/` Código de aplicación (controllers, models, policies, resources)
+- `routes/` Rutas API y módulos
+- `database/` Migraciones y seeders
+- `docker/` Dockerfile, entrypoint y config PHP
+- `miscelaneo/` Scripts y documentación auxiliar no esenciales para runtime
 
-## Contributing
+**Notas y troubleshooting**
+- Si tu IDE marca “Middleware [auth:api] not found”, es un falso positivo en Laravel 12. En runtime funciona; los alias están en `bootstrap/app.php`.
+- Limpieza de cachés al cambiar permisos/rutas:
+  - `php artisan optimize:clear && php artisan route:clear && php artisan config:clear`
+- Si los tests fallan al levantar con Docker, revisa logs del servicio `app`:
+  - `docker compose logs -f app`
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+**Licencia**
+- MIT

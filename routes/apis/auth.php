@@ -19,9 +19,9 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     // ---------- USERS ----------
     Route::post('invite',  [AuthController::class,'inviteUser'])->middleware('can:invite-users');
-    Route::get ('users',   [AuthController::class,'listUsers'])->middleware('can:show-users');
-    Route::put ('users/{id}', [AuthController::class,'updateUser'])->middleware('can:edit-users');
-    Route::delete('users/{id}', [AuthController::class,'deleteUser'])->middleware('can:delete-users');
+    Route::get ('users',   [AuthController::class,'listUsers'])->middleware('can:view-user');
+    Route::put ('users/{id}', [AuthController::class,'updateUser'])->middleware('can:edit-user');
+    Route::delete('users/{id}', [AuthController::class,'deleteUser'])->middleware('can:delete-user');
 
     // ---------- ACTIVATION ----------
     Route::post('activate/{token}', [AuthController::class,'activate']);

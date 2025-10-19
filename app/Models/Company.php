@@ -77,6 +77,12 @@ class Company extends Model
         return $this->users()->role('warehouse-employee');
     }
 
+    // Ubicación
+    public function commune()
+    {
+        return $this->belongsTo(Commune::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

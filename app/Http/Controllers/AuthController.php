@@ -265,9 +265,9 @@ class AuthController extends Controller
                 'fono_fijo'          => null,
                 'cargo'              => $user->position,
                 'direccion'          => $user->address,
-                'region'             => optional(optional(optional($user->commune)->province)->region)->name,
-                'provincia'          => optional(optional($user->commune)->province)->name,
-                'comuna'             => optional($user->commune)->name,
+                // 'region'             => optional(optional(optional($user->commune)->province)->region)->name,
+                // 'provincia'          => optional(optional($user->commune)->province)->name,
+                'comuna_id'             => optional($user->commune)->id,
                 'personalizacion'    => $user->personalization ? [
                     'id'                  => $user->personalization->id,
                     'fecha_creacion'      => $user->personalization->created_at,

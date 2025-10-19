@@ -3,11 +3,11 @@
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:api', 'can:user.view'])->group(function () {
+Route::middleware(['auth:api', 'can:view-user'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
      Route::put('/users/{id}/roles', [UserController::class, 'updateRoles'])
-        ->middleware('can:user.edit-roles');
+        ->middleware('can:edit-roles-user');
 });
 
 // Rutas aisladas para actualizar solo la comuna

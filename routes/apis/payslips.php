@@ -5,17 +5,17 @@ use App\Http\Controllers\PayslipController;
 
 Route::middleware(['auth:api'])->group(function () {
     Route::post('payslips', [PayslipController::class, 'store'])
-        ->middleware('can:payslip.create');
+        ->middleware('can:create-payslips');
 
     Route::get('payslips', [PayslipController::class, 'index'])
-        ->middleware('can:payslip.view');
+        ->middleware('can:view-payslips');
 
     Route::get('payslips/{id}', [PayslipController::class, 'show'])
-        ->middleware('can:payslip.view');
+        ->middleware('can:view-payslips');
 
     Route::put('payslips/{id}', [PayslipController::class, 'update'])
-        ->middleware('can:payslip.edit');
+        ->middleware('can:edit-payslips');
 
     Route::delete('payslips/{id}', [PayslipController::class, 'destroy'])
-        ->middleware('can:payslip.delete');
+        ->middleware('can:delete-payslips');
 });

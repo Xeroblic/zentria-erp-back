@@ -17,13 +17,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'auth'                   => \App\Http\Middleware\Authenticate::class,
-            'rol'                    => \App\Http\Middleware\CheckRol::class,
+            'auth'                  => \App\Http\Middleware\Authenticate::class,
+            'rol'                   => \App\Http\Middleware\CheckRol::class,
             'verificar.activacion'  => \App\Http\Middleware\VerificarActivacion::class,
             'verificar.empresa'     => \App\Http\Middleware\VerificarAccesoEmpresa::class,
+            // Autorizaciones
+            'can'                   => \Illuminate\Auth\Middleware\Authorize::class,
+            'role'                  => \Spatie\Permission\Middlewares\RoleMiddleware::class,
+            'permission'            => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
+            'role_or_permission'    => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
         ]);
-        //Nicoide
-        //falta el middleware de autenticación
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

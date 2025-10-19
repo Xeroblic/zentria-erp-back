@@ -22,7 +22,8 @@ class DatabaseSeeder extends Seeder
             // Luego estructura empresarial
             EmpresaSeeder::class,
             
-            // Usuarios principales
+            // Usuarios principales -> se debe aplicar cambios de contraseñas inmediatos
+            // o eliminarlos eventualmente
             SuperAdminSeeder::class,
             UsuarioBasicoSeeder::class,
             
