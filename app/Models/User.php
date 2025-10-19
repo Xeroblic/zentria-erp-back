@@ -21,7 +21,7 @@ class User extends Authenticatable implements JWTSubject , HasMedia
         'first_name', 'middle_name', 'last_name', 'second_last_name',
         'position', 'rut', 'phone_number', 'address',
         'email', 'email_verified_at', 'password',
-        'is_active', 'gender', 'image',
+        'is_active', 'gender', 'image', 'date_of_birth',
         'primary_branch_id',
     ];
 

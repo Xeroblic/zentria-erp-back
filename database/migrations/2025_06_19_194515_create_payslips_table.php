@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /* TODO: FUTURO MODULO DE RECURSOS HUMANOS. */
         Schema::create('payslips', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
@@ -20,6 +21,13 @@ return new class extends Migration
             $table->integer('work_permits')->default(0);
             $table->integer('worked_days')->default(0);
             $table->decimal('daily_payment', 10, 2)->default(0);
+            $table->string('marital_status')->nullable();
+            $table->date('contract_date')->nullable();
+            $table->date('hire_date')->nullable();
+            $table->date('birth_date')->nullable();
+            $table->string('pension_fund')->nullable();     // (previsión AFP) 
+            $table->string('health_insurance')->nullable(); // (previsión salud)
+
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

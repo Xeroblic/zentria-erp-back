@@ -35,12 +35,12 @@ Route::middleware(['auth:api'])->group(function () {
 });
 
 // Rutas de administración que requieren autenticación
-Route::middleware(['auth:api'])->prefix('admin')->group(function () {
+Route::middleware(['auth:api'])->group(function () {
     // Gestión de usuarios
     Route::get('users', [AdminController::class, 'getUsers']);
     Route::get('users/{id}', [AdminController::class, 'getUser']); // Nueva ruta para usuario individual
     Route::post('users', [AdminController::class, 'createUser']);
-    Route::put('users/{id}', [AdminController::class, 'updateUser']);
+    Route::patch('users/{id}', [AdminController::class, 'updateUser']);
     Route::delete('users/{id}', [AdminController::class, 'deleteUser']);
     Route::patch('users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus']);
     

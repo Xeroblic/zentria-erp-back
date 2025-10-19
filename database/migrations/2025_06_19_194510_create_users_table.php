@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->unsignedInteger('commune_id')->nullable();
             $table->string('email')->unique();
+            $table->date('date_of_birth')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->boolean('is_active')->default(true);

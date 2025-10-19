@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\Admin\StoreUserRequest;
+use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\User;
 use App\Services\ContextualRoleService;
 use Illuminate\Http\Request;
@@ -107,6 +107,7 @@ class AdminController extends Controller
                     'rut' => $user->rut,
                     'celular' => $user->celular ?? $user->phone_number,
                     'cargo' => $user->cargo ?? $user->position,
+                    'fecha_nacimiento' => $user->date_of_birth,
                     'is_staff' => $user->is_staff,
                     'is_active' => $user->is_active ?? true,
                     'can_edit' => $canEdit,
@@ -231,6 +232,7 @@ class AdminController extends Controller
                 'rut' => $user->rut,
                 'celular' => $user->celular ?? $user->phone_number,
                 'cargo' => $user->cargo ?? $user->position,
+                'fecha_nacimiento' => $user->date_of_birth,
                 'is_staff' => $user->is_staff,
                 'is_active' => $user->is_active ?? true,
                 'can_edit' => $canEdit,
@@ -421,7 +423,7 @@ class AdminController extends Controller
     /**
      * Crear nuevo usuario
      */
-    public function createUser(Request $request): JsonResponse
+    public function createUser(StoreUserRequest $request): JsonResponse
     {
         try {
             DB::beginTransaction();
@@ -474,7 +476,7 @@ class AdminController extends Controller
     /**
      * Actualizar usuario existente
      */
-    public function updateUser(Request $request, $id): JsonResponse
+    public function updateUser(UpdateUserRequest $request, $id): JsonResponse
     {
         try {
             DB::beginTransaction();
