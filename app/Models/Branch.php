@@ -58,4 +58,10 @@ class Branch extends Model Implements HasMedia
     {
         return $this->hasMany(Product::class);
     }
+
+    // Ubicación
+    public function commune()
+    {
+        return $this->belongsTo(Commune::class);
+    }
 }

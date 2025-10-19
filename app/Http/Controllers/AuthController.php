@@ -262,9 +262,9 @@ class AuthController extends Controller
                 'fecha_contrato'     => optional($user->payslip)->entry_date,
                 'cargo'              => $user->position,
                 'direccion'          => $user->address,
-                'region'             => optional(optional(optional($user->commune)->province)->region)->name,
-                'provincia'          => optional(optional($user->commune)->province)->name,
-                'comuna'             => optional($user->commune)->name,
+                // 'region'             => optional(optional(optional($user->commune)->province)->region)->name,
+                // 'provincia'          => optional(optional($user->commune)->province)->name,
+                'comuna_id'             => optional($user->commune)->id,
                 'personalizacion'    => $user->personalization ? [
                     'id'                  => $user->personalization->id,
                     'fecha_creacion'      => $user->personalization->created_at,

@@ -22,6 +22,7 @@ class CompanyController extends Controller
         $this->authorize('create', Company::class);
 
         $company = Company::create($request->validated());
+        $company->load(['commune']);
 
         return new CompanyResource($company);
     }
@@ -54,8 +55,8 @@ class CompanyController extends Controller
             return response()->json(['error' => 'No se encontró empresa'], 404);
         }
 
-        // Cargar subsidiaries
-        $company->load('subsidiaries');
+        // Cargar relaciones relevantes
+        $company->load(['subsidiaries.commune', 'commune']);
 
         $this->authorize('view', $company);
 
@@ -66,9 +67,9 @@ class CompanyController extends Controller
     {
         // Si no se proporciona ID o es 1, obtener la empresa principal
         if (!$id || $id == 1) {
-            $company = Company::with('subsidiaries')->firstOrFail();
+            $company = Company::with(['subsidiaries.commune', 'commune'])->firstOrFail();
         } else {
-            $company = Company::with('subsidiaries')->findOrFail($id);
+            $company = Company::with(['subsidiaries.commune', 'commune'])->findOrFail($id);
         }
 
         $this->authorize('update', $company);
@@ -77,7 +78,32 @@ class CompanyController extends Controller
 
         // Refrescar el modelo para obtener los datos actualizados
         $company->refresh();
-        $company->load('subsidiaries');
+        $company->load(['subsidiaries.commune', 'commune']);
+
+        return new CompanyResource($company);
+    }
+
+    /**
+     * Actualizar solo la comuna de la empresa
+     */
+    public function updateCommune(Request $request, int $id)
+    {
+        $company = Company::findOrFail($id);
+        $this->authorize('update', $company);
+
+        $data = $request->validate([
+            'commune_id' => 'nullable|integer|exists:communes,id',
+        ]);
+
+        $company->commune_id = $data['commune_id'] ?? null;
+        $company->save();
+
+        $with = array_filter(explode(',', (string) $request->query('with')));
+        if (!empty($with)) {
+            $company->load($with);
+        } else {
+            $company->load('commune');
+        }
 
         return new CompanyResource($company);
     }
@@ -134,7 +160,7 @@ class CompanyController extends Controller
 
         $this->authorize('view', $company);
 
-        $subsidiaries = $company->subsidiaries()->with('branches')->get();
+        $subsidiaries = $company->subsidiaries()->with(['branches.commune', 'commune'])->get();
 
         return response()->json([
             'subempresas' => $subsidiaries,
@@ -159,6 +185,7 @@ class CompanyController extends Controller
 
         $this->authorize('view', $company);
 
+        $company->loadMissing(['subsidiaries.commune', 'commune']);
         return response()->json([
             'data' => new CompanyResource($company)
         ]);
@@ -182,7 +209,7 @@ class CompanyController extends Controller
 
         $this->authorize('view', $company);
 
-        $subsidiaries = $company->subsidiaries()->with('branches')->get();
+        $subsidiaries = $company->subsidiaries()->with(['branches.commune', 'commune'])->get();
 
         return response()->json([
             'subempresas' => $subsidiaries,

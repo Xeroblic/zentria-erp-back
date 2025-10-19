@@ -13,41 +13,27 @@ class UserPolicy
 
     public function viewAny(User $actor): bool
     {
-        return $actor->hasPermissionTo('user.view', 'api');
+        return $user->hasPermissionTo('view-user');
     }
 
     public function view(User $actor, User $target): bool
     {
-        if ($actor->hasPermissionTo('user.view', 'api')) {
-            return true;
-        }
-        // Permitimos ver su propio perfil con permiso acotado
-        return $actor->id === $target->id && $actor->hasPermissionTo('user.view.self', 'api');
+        return $user->hasPermissionTo('view-user');
     }
 
     public function create(User $actor): bool
     {
-        // Crea usuarios: admin o permiso específico
-        return $actor->hasRole('admin') || $actor->hasPermissionTo('user.create', 'api');
+        return $user->hasPermissionTo('create-user');
     }
 
     public function update(User $actor, User $target): bool
     {
-        // Admin o permiso global
-        if ($actor->hasRole('admin') || $actor->hasPermissionTo('user.edit', 'api')) {
-            return true;
-        }
-        // Self-edit con permiso acotado
-        return $actor->id === $target->id && $actor->hasPermissionTo('user.edit.self', 'api');
+        return $user->hasPermissionTo('edit-user');
     }
 
     public function delete(User $actor, User $target): bool
     {
-        // Evita auto-borrado (opcional, recomendado)
-        if ($actor->id === $target->id) {
-            return false;
-        }
-        return $actor->hasRole('admin') || $actor->hasPermissionTo('user.delete', 'api');
+        return $user->hasPermissionTo('delete-user');
     }
 
     public function invite(User $actor): bool

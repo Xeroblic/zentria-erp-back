@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class CommuneSeeder extends Seeder
 {
     public function run(): void
-    {{
+    {
         DB::table('communes')->truncate();
         DB::table('communes')->insert(
             [
@@ -363,5 +363,6 @@ class CommuneSeeder extends Seeder
 
         $this->command->info("✅ Comunas insertadas correctamente.");
         $this->command->info("Todas las comunas de chile han sido insertadas en la base de datos. (Actualizado a 16/10/2025)");
-    }}
+    }
 }
+

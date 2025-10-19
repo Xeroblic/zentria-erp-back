@@ -5,19 +5,22 @@ use App\Http\Controllers\SubsidiaryController;
 
 Route::middleware(['auth:api'])->group(function () {
     Route::post('subsidiaries', [SubsidiaryController::class, 'store'])
-        ->middleware('can:subsidiary.create');
+        ->middleware('can:create-subsidiary');
 
     Route::get('subsidiaries', [SubsidiaryController::class, 'index'])
-        ->middleware('can:subsidiary.view');
+        ->middleware('can:view-subsidiary');
 
     Route::get('subsidiaries/{id}', [SubsidiaryController::class, 'show'])
-        ->middleware('can:subsidiary.view');
+        ->middleware('can:view-subsidiary');
 
     Route::put('subsidiaries/{id}', [SubsidiaryController::class, 'update'])
-        ->middleware('can:subsidiary.edit');
+        ->middleware('can:edit-subsidiary');
 
     Route::delete('subsidiaries/{id}', [SubsidiaryController::class, 'destroy'])
-        ->middleware('can:subsidiary.delete');
+        ->middleware('can:delete-subsidiary');
 
-    
+    // Actualizar solo la comuna de la subsidiaria
+    Route::patch('subsidiaries/{id}/commune', [SubsidiaryController::class, 'updateCommune'])
+        ->middleware('can:edit-subsidiary')
+        ->name('subsidiaries.updateCommune');
 });

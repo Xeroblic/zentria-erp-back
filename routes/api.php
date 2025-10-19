@@ -65,19 +65,19 @@ Route::middleware(['auth:api'])->group(function () {
 
 Route::middleware(['auth:api'])->group(function () {
     Route::post('branches', [BranchController::class, 'store'])
-        ->middleware('can:branch.create');
+        ->middleware('can:create-branch');
 
     Route::get('branches', [BranchController::class, 'index'])
-        ->middleware('can:branch.view');
+        ->middleware('can:view-branch');
 
     Route::put('branches/{id}', [BranchController::class, 'update'])
-        ->middleware('can:branch.edit');
+        ->middleware('can:edit-branch');
 
     Route::delete('branches/{id}', [BranchController::class, 'destroy'])
-        ->middleware('can:branch.delete');
+        ->middleware('can:delete-branch');
     
     Route::get('branches/{id}', [BranchController::class, 'show'])
-        ->middleware('can:branch.view');
+        ->middleware('can:view-branch');
 });
 
 use App\Http\Controllers\CompanyController;
@@ -87,59 +87,59 @@ Route::middleware(['auth:api'])->group(function () {
     /// Funciones dentro de compañia tipo CRUD
     
     Route::post('companies', [CompanyController::class, 'store'])
-        ->middleware('can:company.create');
+        ->middleware('can:create-company');
 
     Route::get('companies', [CompanyController::class, 'index'])
-        ->middleware('can:company.view');
+        ->middleware('can:view-company');
 
     Route::get('companies/{id}', [CompanyController::class, 'show'])
-        ->middleware('can:company.view');
+        ->middleware('can:view-company');
 
     Route::put('companies/{id}', [CompanyController::class, 'update'])
-        ->middleware('can:company.edit');
+        ->middleware('can:edit-company');
 
     Route::patch('companies/{id}', [CompanyController::class, 'update'])
-        ->middleware('can:company.edit');
+        ->middleware('can:edit-company');
 
     Route::delete('companies/{id}', [CompanyController::class, 'destroy'])
-        ->middleware('can:company.delete');
+        ->middleware('can:delete-company');
 
 
     ///  ruta para usuarios dentro de una empresa sub empresa y sucursales
     Route::get('companies/{id}/users', [CompanyController::class, 'getUsers'])
-        ->middleware('can:company.view');
+        ->middleware('can:view-company');
 
 
     /// Funciones relacionadas a las subempresas de una empresa
     Route::get('companies/{id}/subsidiaries', [CompanyController::class, 'subsidiaries'])
-        ->middleware('can:subsidiary.view')
+        ->middleware('can:view-subsidiary')
         ->name('companies.subsidiaries');
     
     // Rutas dinámicas para la empresa del usuario actual (sin IDs hardcodeados)
     Route::get('my-company', [CompanyController::class, 'myCompany'])
-        ->middleware('can:company.view')
+        ->middleware('can:view-company')
         ->name('my-company.show');
         
     Route::get('my-company/subsidiaries', [CompanyController::class, 'myCompanySubsidiaries'])
-        ->middleware('can:subsidiary.view')
+        ->middleware('can:view-subsidiary')
         ->name('my-company.subsidiaries');
         
     Route::get('my-company/users', [CompanyController::class, 'myCompanyUsers'])
-        ->middleware('can:user.view')
+        ->middleware('can:view-user')
         ->name('my-company.users');
         
     Route::put('my-company', [CompanyController::class, 'updateMyCompany'])
-        ->middleware('can:company.edit')
+        ->middleware('can:edit-company')
         ->name('my-company.update');
 
 });
 
 use App\Http\Controllers\UserController;
 
-Route::middleware(['auth:api', 'can:user.view'])->group(function () {
+Route::middleware(['auth:api', 'can:view-user'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
      Route::put('/users/{id}/roles', [UserController::class, 'updateRoles'])
-        ->middleware('can:user.edit-roles');
+        ->middleware('can:edit-roles-user');
 });
 
 

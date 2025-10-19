@@ -33,4 +33,10 @@ class Subsidiary extends Model
     {
         return $this->hasMany(Branch::class);
     }
+
+    // Ubicación
+    public function commune()
+    {
+        return $this->belongsTo(Commune::class);
+    }
 }
