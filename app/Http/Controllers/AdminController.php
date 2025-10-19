@@ -112,6 +112,7 @@ class AdminController extends Controller
                     'is_active' => $user->is_active ?? true,
                     'can_edit' => $canEdit,
                     'is_super_admin' => $user->hasRole('super-admin'),
+                    'image_url' => $user->image ?: ($avatar['md'] ?? null),
                     
                     // Información de empresas
                     'companies' => $user->companies->map(function($company) {
@@ -237,6 +238,7 @@ class AdminController extends Controller
                 'is_active' => $user->is_active ?? true,
                 'can_edit' => $canEdit,
                 'is_super_admin' => $user->hasRole('super-admin'),
+                'image_url' => $user->image ?: ($avatar['md'] ?? null),
                 
                 // Información de empresas
                 'companies' => $user->companies->map(function($company) {
