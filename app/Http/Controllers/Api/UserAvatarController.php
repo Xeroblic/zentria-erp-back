@@ -31,10 +31,17 @@ class UserAvatarController extends Controller
             ])
             ->toMediaCollection('avatar');
 
+        // Persistir URL en la columna `image` para compatibilidad con front
+        $urlSm = $user->getFirstMediaUrl('avatar', 'avatar_sm');
+        $urlMd = $user->getFirstMediaUrl('avatar', 'avatar_md');
+        $user->image = $urlMd ?: ($urlSm ?: $media->getUrl());
+        $user->save();
+
         return response()->json([
             'message' => 'Avatar actualizado',
             'media_id' => $media->id,
             'url' => $user->getFirstMediaUrl('avatar', 'avatar_md'),
+            'image' => $user->image,
         ]);
     }
 
@@ -61,6 +68,8 @@ class UserAvatarController extends Controller
         $this->authorize('update', $user);
 
         $user->clearMediaCollection('avatar');
+        $user->image = null; // limpiar valor persistido
+        $user->save();
 
         return response()->json([
             'message' => 'Avatar eliminado',

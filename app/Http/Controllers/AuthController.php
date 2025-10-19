@@ -257,7 +257,9 @@ class AuthController extends Controller
                 'genero'             => $user->gender,
                 'fecha_nacimiento'   => $user->date_of_birth,
                 'is_staff'           => $user->hasAnyRole(['super-admin', 'company-admin']),
+                // image array (media library) + image_url (columna persistida)
                 'image'              => $avatar,
+                'image_url'          => $user->image ?: ($avatar['md'] ?? null),
                 'fecha_ingreso'      => optional($user->payslip)->entry_date,
                 'fecha_contrato'     => optional($user->payslip)->entry_date,
                 'cargo'              => $user->position,

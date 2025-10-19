@@ -31,7 +31,7 @@ class UserController extends Controller
             $query->where('primary_branch_id', $user->primary_branch_id);
         }
 
-        return $query->select('id', 'first_name', 'last_name', 'email', 'commune_id')->get();
+        return $query->select('id', 'first_name', 'last_name', 'email', 'image')->get();
     }
 
     public function show(Request $request, $id)
@@ -42,7 +42,7 @@ class UserController extends Controller
             $query->with($with);
         }
 
-        return $query->findOrFail($id, ['id', 'first_name', 'last_name', 'email', 'commune_id']);
+        return $query->findOrFail($id, ['id', 'first_name', 'last_name', 'email', 'image']);
     }
 
     public function me(Request $request) 

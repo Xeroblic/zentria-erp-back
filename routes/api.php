@@ -134,15 +134,6 @@ Route::middleware(['auth:api'])->group(function () {
 
 });
 
-use App\Http\Controllers\UserController;
-
-Route::middleware(['auth:api', 'can:view-user'])->group(function () {
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
-     Route::put('/users/{id}/roles', [UserController::class, 'updateRoles'])
-        ->middleware('can:edit-roles-user');
-});
-
-
 // Rutas de autenticación bajo el prefijo 'auth'
 Route::prefix('auth')->group(function () {
     require __DIR__ . '/apis/auth.php';
