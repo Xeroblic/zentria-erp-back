@@ -49,8 +49,6 @@ class UserInvitationController extends Controller
             'email'      => $inv->email,
             'status'     => $inv->status,
             'expires_at' => $inv->expires_at,
-            // Solo para pruebas: contraseña temporal en claro
-            'temporary_password' => $inv->getAttribute('temporary_password_plain')
         ], 201);
     }
 

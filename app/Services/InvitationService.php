@@ -47,8 +47,7 @@ class InvitationService
 
         return DB::transaction(function () use ($inviter, $branch, $email, $payload, $role, $ttlDays) {
             $token = (string) Str::uuid();
-            $tempPasswordPlain = Str::random(16);
-            $tempPasswordHash = Hash::make($tempPasswordPlain);
+            $tempPasswordHash = Hash::make(Str::random(16));
             $expiresAt = now()->addDays($ttlDays ?? 7);
 
             // 1) Create temporary user (is_active = false)
@@ -109,8 +108,6 @@ class InvitationService
                 )
             );
 
-            // Attach non-persistent plain password for testing via API
-            $inv->setAttribute('temporary_password_plain', $tempPasswordPlain);
             return $inv;
         });
     }
