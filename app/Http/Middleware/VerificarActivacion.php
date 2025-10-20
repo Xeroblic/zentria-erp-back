@@ -12,7 +12,7 @@ class VerificarActivacion
         $user = Auth::user();
 
         if (!$user || !$user->is_active) {
-            return response()->json(['error' => 'Tu cuenta no está activada.'], 403);
+            return response()->json(['error' => 'ERROR NO TIENES TU CUENTA ACTIVADA'], 403);
         }
 
         return $next($request);

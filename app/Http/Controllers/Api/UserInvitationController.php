@@ -135,6 +135,7 @@ class UserInvitationController extends Controller
         $data = $invitations->map(function ($inv) {
             $invitedByName = $inv->inviter ? trim(($inv->inviter->first_name ?? '').' '.($inv->inviter->last_name ?? '')) : null;
             return [
+                'id'           => $inv->id,
                 'email'        => $inv->email,
                 'role'         => $inv->role_name,
                 'status'       => $inv->status,
