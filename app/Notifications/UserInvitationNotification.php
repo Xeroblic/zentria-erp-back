@@ -22,14 +22,14 @@ class UserInvitationNotification extends Notification implements ShouldQueue
 
     public function toMail($notifiable): MailMessage
     {
-        $branch = $this->branchName ?: 'sucursal asignada';
-
+        // Mejor formato usando Markdown template
         return (new MailMessage)
             ->subject('Invitación de acceso al ERP')
-            ->greeting('¡Hola!')
-            ->line("Has sido invitado como {$this->role} para la sucursal {$branch}.")
-            ->action('Activar tu cuenta', $this->activationUrl)   // <-- BOTÓN
-            ->line('Esta es una invitación única; no la compartas.')
-            ->when($this->expiresAt, fn($m) => $m->line("Esta invitación vence el: {$this->expiresAt}."));
+            ->markdown('vendor.mail.invitations.activate', [
+                'role'          => $this->role,
+                'branchName'    => $this->branchName,
+                'activationUrl' => $this->activationUrl,
+                'expiresAt'     => $this->expiresAt,
+            ]);
     }
 }

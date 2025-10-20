@@ -18,13 +18,13 @@ Route::post('login',    [AuthController::class, 'login']);
 Route::group(['middleware' => ['auth:api']], function () {
 
     // ---------- USERS ----------
-    Route::post('invite',  [AuthController::class,'inviteUser'])->middleware('can:invite-users');
+    // Invitaciones unificadas en routes/apis/invitations.php (POST /api/user/invite)
     Route::get ('users',   [AuthController::class,'listUsers'])->middleware('can:view-user');
     Route::put ('users/{id}', [AuthController::class,'updateUser'])->middleware('can:edit-user');
     Route::delete('users/{id}', [AuthController::class,'deleteUser'])->middleware('can:delete-user');
 
     // ---------- ACTIVATION ----------
-    Route::post('activate/{token}', [AuthController::class,'activate']);
+    // Activación pública gestionada en routes/apis/invitations.php
 
     // ---------- PROFILE ----------
     Route::get ('perfil', [AuthController::class,'perfil']);

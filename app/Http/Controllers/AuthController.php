@@ -10,11 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\InvitacionMail;
 use Illuminate\Container\Attributes\Auth;
-use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -94,84 +90,9 @@ class AuthController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function inviteUser(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'first_name'       => 'required|string',
-            'last_name'        => 'required|string',
-            'email'            => 'required|email|unique:users',
-            'rut'              => 'required|string|unique:users',
-            'position'         => 'required|string',
-            'phone_number'     => 'nullable|string',
-            'address'          => 'nullable|string',
-            'branch_id'        => 'required|exists:branches,id',
-            'role'             => 'required|string|exists:roles,name',
-        ]);
+    // (legacy inviteUser removido; usar POST /api/user/invite)
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 422);
-        }
-
-        $tempPassword = Str::random(10);
-
-        $user = User::create([
-            'first_name'   => $request->first_name,
-            'last_name'    => $request->last_name,
-            'email'        => $request->email,
-            'password'     => Hash::make($tempPassword),
-            'position'     => $request->position,
-            'rut'          => $request->rut,
-            'phone_number' => $request->phone_number,
-            'address'      => $request->address,
-            'branch_id'    => $request->branch_id,
-            'work_permits' => json_encode([]),
-        ]);
-
-        $user->assignRole($request->role);
-
-        $invitationToken = Str::uuid()->toString();
-
-        DB::table('password_resets')->insert([
-            'email'      => $user->email,
-            'token'      => $invitationToken,
-            'created_at' => now(),
-        ]);
-
-        Mail::to($user->email)->send(new InvitacionMail($invitationToken, $tempPassword));
-
-        return response()->json(['message' => 'Invitation sent'], 201);
-    }
-
-    public function activateAccount(Request $request, $token)
-    {
-        $record = DB::table('password_resets')
-            ->where('token', $token)
-            ->first();
-
-        if (!$record || \Carbon\Carbon::parse($record->created_at)->addHours(24)->isPast()) {
-            return response()->json(['error' => 'Token inválido o expirado'], 400);
-        }
-
-        $user = User::where('email', $record->email)->first();
-        if (!$user) {
-            return response()->json(['error' => 'Usuario no existe'], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'password' => 'required|string|min:6|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 422);
-        }
-
-        $user->password = Hash::make($request->password);
-        $user->save();
-
-        DB::table('password_resets')->where('email', $user->email)->delete();
-
-        return response()->json(['message' => 'Cuenta activada. Ahora puedes iniciar sesión.']);
-    }
+    // (legacy activateAccount removido; usar POST /usuarios/activar)
 
     /*
     |--------------------------------------------------------------------------

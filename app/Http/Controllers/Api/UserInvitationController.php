@@ -100,4 +100,50 @@ class UserInvitationController extends Controller
             ],
         ], 200);
     }
+
+    /** GET /api/user/invitations — listar invitaciones con filtro opcional por estado */
+    public function index(Request $request)
+    {
+        $validated = $request->validate([
+            'status' => ['nullable','in:pending,used,expired'],
+        ]);
+
+        $user = $request->user();
+
+        $query = Invitation::query()
+            ->with(['inviter:id,first_name,last_name,email']);
+
+        if (!empty($validated['status'])) {
+            $query->where('status', $validated['status']);
+        }
+
+        if (!method_exists($user, 'hasRole') || !$user->hasRole('super-admin')) {
+            if (method_exists($user, 'branches')) {
+                $query->whereIn('branch_id', function ($q) use ($user) {
+                    $q->select('branches.id')
+                        ->from('branches')
+                        ->join('branch_user', 'branches.id', '=', 'branch_user.branch_id')
+                        ->where('branch_user.user_id', $user->id);
+                });
+            } else {
+                $query->where('invited_by', $user->id);
+            }
+        }
+
+        $invitations = $query->orderByDesc('created_at')->get();
+
+        $data = $invitations->map(function ($inv) {
+            $invitedByName = $inv->inviter ? trim(($inv->inviter->first_name ?? '').' '.($inv->inviter->last_name ?? '')) : null;
+            return [
+                'email'        => $inv->email,
+                'role'         => $inv->role_name,
+                'status'       => $inv->status,
+                'invited_at'   => $inv->created_at,
+                'expires_at'   => $inv->expires_at,
+                'invited_by'   => $invitedByName ?: ($inv->inviter->email ?? null),
+            ];
+        })->values();
+
+        return response()->json(['data' => $data]);
+    }
 }
