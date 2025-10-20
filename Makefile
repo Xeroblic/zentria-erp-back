@@ -1,11 +1,20 @@
+WITH_TESTS ?= 0
+COMPOSE ?= docker compose
+PROFILES := $(if $(filter 1,$(WITH_TESTS)),--profile test,)
+
 up:
-	docker compose up -d db db_test mailpit
+	$(COMPOSE) $(PROFILES) up -d db mailpit $(if $(filter 1,$(WITH_TESTS)),db_test app_test,app)
 
 test-pg:
-	docker compose run --rm tester
+	-$(COMPOSE) rm -f -s -v tester >/dev/null 2>&1 || true
+	$(COMPOSE) --profile test up -d db_test
+	$(COMPOSE) --profile test run --rm tester
+
+clean-tester:
+	-@docker compose rm -f -s -v tester || true
 
 up-all:
-	docker compose up --build
+	$(COMPOSE) $(PROFILES) up --build db mailpit $(if $(filter 1,$(WITH_TESTS)),db_test app_test,app)
 
 down:
-	docker compose down -v
+	$(COMPOSE) down -v

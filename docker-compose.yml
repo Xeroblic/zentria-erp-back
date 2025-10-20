@@ -30,8 +30,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      tester:
-        condition: service_completed_successfully
 
   db:
     image: postgres:16
@@ -60,8 +58,42 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
 
+  # App variant for test profile that waits for tests to pass
+  app_test:
+    profiles: ["test"]
+    build:
+      context: .
+      dockerfile: docker/app.Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      APP_PORT: 8000
+      TZ: America/Santiago
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: zentriaback
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      RUN_MIGRATIONS: "true"
+      RUN_SEED: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www
+      - vendor:/var/www/vendor
+    depends_on:
+      db:
+        condition: service_healthy
+      tester:
+        condition: service_completed_successfully
+
   db_test:
     image: postgres:16
+    profiles: ["test"]
     environment:
       POSTGRES_DB: zentriaback_test
       POSTGRES_USER: postgres
@@ -79,13 +111,19 @@ services:
     build:
       context: .
       dockerfile: docker/app.Dockerfile
+    profiles: ["test"]
+    entrypoint: ["/entrypoint.sh"]
     depends_on:
       db_test:
         condition: service_healthy
     restart: "no"
     env_file: .env.testing.pgsql
+    volumes:
+      - .:/var/www
+      - vendor:/var/www/vendor
     command: >
       sh -c "
+        composer install --no-interaction --prefer-dist --no-progress &&
         php artisan config:clear &&
         php artisan cache:clear &&
         php artisan migrate:fresh --seed --env=testing &&
