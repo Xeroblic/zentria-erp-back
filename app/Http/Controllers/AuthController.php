@@ -54,6 +54,9 @@ class AuthController extends Controller
         // Fallback manual check to avoid guard/provider inconsistencies after tests
         $user = User::where('email', $credentials['email'] ?? '')->first();
         if ($user && Hash::check(($credentials['password'] ?? ''), $user->password)) {
+            if (isset($user->is_active) && !$user->is_active) {
+                return response()->json(['error' => 'Error, tu cuenta no está activada en este momento, si crees que es un error contacta al administrador.'], 403);
+            }
             $token = auth('api')->login($user);
             return response()->json([
                 'token' => $token,
@@ -64,10 +67,15 @@ class AuthController extends Controller
         if (! $token = auth('api')->attempt($credentials)) {
             return response()->json(['error' => 'Credenciales inválidas'], 401);
         }
+        $logged = auth('api')->user();
+        if ($logged && isset($logged->is_active) && !$logged->is_active) {
+            auth('api')->logout(true);
+            return response()->json(['error' => 'Error, tu cuenta no está activada en este momento, si crees que es un error contacta al administrador.'], 403);
+        }
 
         return response()->json([
             'token' => $token,
-            'user'  => auth('api')->user()
+            'user'  => $logged
         ]);
     }
 

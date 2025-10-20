@@ -32,6 +32,11 @@ class Authenticate extends Middleware
                 return response()->json(['error' => 'Usuario no autenticado.'], 401);
             }
 
+            // Bloquear acceso a usuarios desactivados
+            if (property_exists($user, 'is_active') && !$user->is_active) {
+                return response()->json(['error' => 'ERROR NO TIENES TU CUENTA ACTIVADA'], 403);
+            }
+
             Auth::setUser($user);
 
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
