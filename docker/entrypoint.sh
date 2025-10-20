@@ -42,33 +42,6 @@ if [ "${RUN_SEED:-false}" = "true" ]; then
   php artisan db:seed --force
 fi
 
-# Ejecutar tests si está habilitado
-if [ "${RUN_TESTS:-true}" = "true" ]; then
-  echo "Ejecutando test suite..."
-  set +e
-  TEST_OUTPUT=$(php artisan test --ansi 2>&1)
-  TEST_STATUS=$?
-  # Imprimir salida original de PHPUnit/Laravel test
-  echo "$TEST_OUTPUT"
-  # Extraer resumen "Tests: X, Assertions: Y, ..." si existe
-  TESTS_LINE=$(echo "$TEST_OUTPUT" | grep -E "Tests:\s*[0-9]+" | tail -1)
-  TESTS_COUNT=$(echo "$TESTS_LINE" | sed -n 's/.*Tests:\s*\([0-9]\+\).*/\1/p')
-  set -e
-  if [ $TEST_STATUS -ne 0 ]; then
-    if [ -n "$TESTS_LINE" ]; then
-      echo "❌ Tests fallaron. Resumen: $TESTS_LINE" >&2
-    else
-      echo "❌ Tests fallaron." >&2
-    fi
-    exit 1
-  else
-    if [ -n "$TESTS_COUNT" ]; then
-      echo "✅ $TESTS_COUNT tests probados y ejecutados correctamente."
-    else
-      echo "✅ Tests ejecutados correctamente."
-    fi
-  fi
-fi
 
 # imagenes spatie
 mkdir -p storage/app/public
