@@ -46,7 +46,10 @@ return new class extends Migration {
         });
 
         // Índice GIN para búsquedas por atributos JSONB
-        DB::statement('CREATE INDEX products_attributes_json_gin ON products USING GIN (attributes_json)');
+        // Crear índice GIN solo en PostgreSQL. Omitir en SQLite para tests.
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('CREATE INDEX products_attributes_json_gin ON products USING GIN (attributes_json)');
+        }
     }
 
     public function down(): void

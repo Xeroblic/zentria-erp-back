@@ -53,14 +53,25 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
+        auth()->shouldUse('api');
 
-        if (! $token = JWTAuth::attempt($credentials)) {
+        // Fallback manual check to avoid guard/provider inconsistencies after tests
+        $user = User::where('email', $credentials['email'] ?? '')->first();
+        if ($user && Hash::check(($credentials['password'] ?? ''), $user->password)) {
+            $token = auth('api')->login($user);
+            return response()->json([
+                'token' => $token,
+                'user'  => $user,
+            ]);
+        }
+
+        if (! $token = auth('api')->attempt($credentials)) {
             return response()->json(['error' => 'Credenciales inválidas'], 401);
         }
 
         return response()->json([
             'token' => $token,
-            'user'  => JWTAuth::user()
+            'user'  => auth('api')->user()
         ]);
     }
 

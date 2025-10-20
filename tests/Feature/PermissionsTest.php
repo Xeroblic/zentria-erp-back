@@ -25,10 +25,14 @@ class PermissionsTest extends TestCase
             'first_name' => 'Test',
             'last_name'  => 'User',
             'email'      => 'user'.uniqid().'@example.com',
-            'password'   => bcrypt('password'),
+            'password'   => 'password',
             'rut'        => '1'.random_int(1000000, 9999999).'-K',
         ];
-        return User::create(array_merge($defaults, $overrides));
+        $payload = array_merge($defaults, $overrides);
+        if (isset($payload['password']) && !str_starts_with($payload['password'], '$2y$')) {
+            $payload['password'] = \Illuminate\Support\Facades\Hash::make($payload['password']);
+        }
+        return User::create($payload);
     }
 
     protected function tokenFor(User $user): string
@@ -78,4 +82,3 @@ class PermissionsTest extends TestCase
         $resp1->assertStatus(200);
     }
 }
-

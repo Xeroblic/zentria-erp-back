@@ -11,6 +11,33 @@ use App\Http\Controllers\Api\FalabellaController;
 // Ruta temporal de prueba
 Route::get('test-auth', [TestController::class, 'testAuth']);
 
+Route::post('/_diag-login', function (\Illuminate\Http\Request $r) {
+    $email = \Illuminate\Support\Str::lower($r->input('email'));
+    $pass  = $r->input('password');
+
+    $env        = app()->environment();
+    $db         = config('database.default');
+    $defGuard   = config('auth.defaults.guard');
+    $apiDriver  = config('auth.guards.api.driver');
+    $provider   = config('auth.guards.api.provider');
+    $modelClass = config("auth.providers.$provider.model");
+
+    $user = $modelClass::withoutGlobalScopes()->whereRaw('LOWER(email) = ?', [$email])->first();
+
+    return response()->json([
+        'env'          => $env,
+        'db'           => $db,
+        'defaults.guard' => $defGuard,
+        'api.driver'   => $apiDriver,
+        'provider'     => $provider,
+        'model'        => $modelClass,
+        'user_found'   => !!$user,
+        'password_hash_prefix' => $user? substr($user->password, 0, 4) : null, // ej: $2y$, $argon
+        'hash_check'   => $user? \Illuminate\Support\Facades\Hash::check($pass, $user->password) : null,
+        'auth_validate'=> auth('api')->validate(['email'=>$email,'password'=>$pass]),
+    ]);
+});
+
 // Rutas de autenticación directas (para compatibilidad con frontend)
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);

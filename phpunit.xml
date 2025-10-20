@@ -19,12 +19,13 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="PHPUNIT_RUNNING" value="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
-        <env name="JWT_SECRET" value="testing-secret-change-me"/>
+        <env name="JWT_SECRET" value="4c7f7b9f6d4a1c9e2b3d5f7a8c9d0e1f4c7f7b9f6d4a1c9e2b3d5f7a8c9d0e1f"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

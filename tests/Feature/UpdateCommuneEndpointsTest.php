@@ -54,7 +54,7 @@ class UpdateCommuneEndpointsTest extends TestCase
             'first_name' => 'Admin',
             'last_name' => 'Test',
             'email' => 'admin'.uniqid().'@example.com',
-            'password' => bcrypt('password'),
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
             'rut' => (string) random_int(10000000, 19999999).'-K',
         ]);
         $user->assignRole('super-admin');
@@ -67,7 +67,7 @@ class UpdateCommuneEndpointsTest extends TestCase
             'first_name' => 'User',
             'last_name' => 'Test',
             'email' => 'user'.uniqid().'@example.com',
-            'password' => bcrypt('password'),
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
             'rut' => (string) random_int(20000000, 29999999).'-K',
         ]);
     }
