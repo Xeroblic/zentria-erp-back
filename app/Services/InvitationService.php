@@ -88,6 +88,8 @@ class InvitationService
                 'data'              => $payload['data'] ?? null,
             ]);
 
+            $fullName = trim(($payload['first_name'] ?? '') . ' ' . ($payload['last_name'] ?? '')) ?: null;
+
             $activationUrl = $this->buildActivationUrl($token);
 
             // etiqueta segura de sucursal (por si branch_name viene null)
@@ -103,8 +105,9 @@ class InvitationService
                 new UserInvitationNotification(
                     $activationUrl,                 // activationUrl
                     $role->name,                    // role
-                    $branchLabel,                   // branchName (puede ser null/str)
-                    $expiresAt->toIso8601String()   // expiresAt (string)
+                    $branchLabel,                   // branchName
+                    $expiresAt->toIso8601String(),  // expiresAt
+                    $fullName                       // fullName
                 )
             );
 

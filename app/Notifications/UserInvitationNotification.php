@@ -15,7 +15,8 @@ class UserInvitationNotification extends Notification implements ShouldQueue
         public string  $activationUrl,
         public string  $role,
         public ?string $branchName = null,   // now nullable
-        public ?string $expiresAt = null
+        public ?string $expiresAt = null,
+        public ?string $fullName = null
     ) {}
 
     public function via($notifiable): array { return ['mail']; }
@@ -24,12 +25,13 @@ class UserInvitationNotification extends Notification implements ShouldQueue
     {
         // Mejor formato usando Markdown template
         return (new MailMessage)
-            ->subject('Invitación de acceso al ERP')
+            ->subject('Invitación de acceso al ERP Zentria')
             ->markdown('vendor.mail.invitations.activate', [
                 'role'          => $this->role,
                 'branchName'    => $this->branchName,
                 'activationUrl' => $this->activationUrl,
                 'expiresAt'     => $this->expiresAt,
+                'fullName'      => $this->fullName,
             ]);
     }
 }
