@@ -80,6 +80,7 @@ Route::middleware(['auth:api'])->group(function () {
     // Gestión de roles de usuarios
     Route::get('users/{id}/roles', [AdminController::class, 'getUserRoles']);
     Route::post('users/{id}/roles', [AdminController::class, 'assignRolesToUser']);
+    Route::patch('users/{id}/roles', [AdminController::class, 'updateUserRoles']);
     Route::delete('users/{id}/roles', [AdminController::class, 'revokeRolesFromUser']);
     Route::delete('users/{userId}/roles/{roleId}', [AdminController::class, 'revokeSpecificRoleFromUser']);
     

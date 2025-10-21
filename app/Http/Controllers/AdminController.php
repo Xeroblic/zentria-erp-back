@@ -1109,6 +1109,37 @@ class AdminController extends Controller
     }
 
     /**
+     * Actualizar roles de usuario, lógica: Debes dejar solo los roles actualizados y eliminar los demás
+     */
+
+    public function updateUserRoles(Request $request, $id): JsonResponse
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $request->validate([
+                'roles' => 'required|array',
+                'roles.*' => 'string|exists:roles,name'
+            ]);
+
+            $user->syncRoles($request->roles);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Roles actualizados exitosamente',
+                'data' => $user->roles->pluck('name')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar roles',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Revocar un permiso específico de un usuario
      */
     public function revokeSpecificPermissionFromUser($userId, $permissionId): JsonResponse
