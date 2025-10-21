@@ -40,8 +40,17 @@ class RolesAndPermissionsSeeder extends Seeder
         //  - ['grupo' => ['perm1']]   => subset del grupo
         //  - 'permiso-suelto'         => fueraa de grupos
         $ROLE_MATRIX = [
+            // Super Admin: todos los permisos actuales y futuros (Gate::before ya lo otorga)
             'super-admin' => ['*'],
 
+            // Admins contextuales existentes
+            'admin' => [
+                // Admin general (no super): acceso amplio de gestión
+                '@dashboard', '@user', '@company', '@subsidiary', '@branch', '@payslip', '@report', '@product', '@category', '@brand',
+                'manage-invitations',
+            ],
+
+            // Admins contextuales existentes
             'company-admin' => [
                 '@user', '@company', '@subsidiary', '@branch', '@payslip', '@report',
                 'manage-roles', // extras fuera de grupos
@@ -79,7 +88,55 @@ class RolesAndPermissionsSeeder extends Seeder
                 ['branch'  => ['view-branch']],
                 ['payslip' => ['view-payslips']],
             ],
+
+            // ===== Nuevos roles normalizados en inglés =====
+            // Supervisor Empresa → lectura en toda la estructura + dashboards/reportes
+            'company-supervisor' => [
+                ['dashboard'  => ['view-dashboard']],
+                ['user'       => ['view-user']],
+                ['company'    => ['view-company']],
+                ['subsidiary' => ['view-subsidiary']],
+                ['branch'     => ['view-branch']],
+                ['product'    => ['view-product']],
+                ['category'   => ['view-category']],
+                ['brand'      => ['view-brand']],
+                ['report'     => ['view-reports','export-reports']],
+            ],
+
+            // Warehouse Manager (encargado de bodega)
+            'warehouse-manager' => [
+                '@product',
+                ['category' => ['view-category']],
+                ['brand'    => ['view-brand']],
+                ['report'   => ['view-reports']],
+            ],
+
+            // Salesperson (vendedor)
+            'salesperson' => [
+                ['product'  => ['view-product']],
+                ['category' => ['view-category']],
+                ['brand'    => ['view-brand']],
+                ['report'   => ['view-reports']],
+            ],
+
+            // After-sales (postventa)
+            'after-sales' => [
+                ['user'     => ['view-user']],
+                ['product'  => ['view-product']],
+                ['report'   => ['view-reports']],
+            ],
+
+            // Cashier (cajero)
+            'cashier' => [
+                ['product'  => ['view-product']],
+                ['category' => ['view-category']],
+                ['brand'    => ['view-brand']],
+                ['report'   => ['view-reports','export-reports']],
+            ],
         ];
+
+        // Ordenar roles alfabéticamente por nombre (case-insensitive, natural)
+        ksort($ROLE_MATRIX, SORT_NATURAL | SORT_FLAG_CASE);
 
         // ===== 3) Resolver matriz → lista final de permisos por rol =====
         $resolveSpec = function ($spec) use ($G, $groups, $allPermissions) {
@@ -141,7 +198,7 @@ class RolesAndPermissionsSeeder extends Seeder
             return $perms;
         };
 
-        // ===== 4) Crear roles y sincronizar permisos =====
+        // ===== 4) Crear roles y sincronizar permisos (orden alfabético) =====
         foreach ($ROLE_MATRIX as $roleName => $roleSpec) {
             /** @var \Spatie\Permission\Models\Role $role */
             $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'api']);

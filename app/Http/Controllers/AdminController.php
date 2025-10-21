@@ -562,17 +562,29 @@ class AdminController extends Controller
     public function getRoles(): JsonResponse
     {
         try {
-            $roles = Role::with('permissions')->orderBy('name')->get();
-            
-            $rolesData = $roles->map(function($role) {
+            // Traer roles SOLO del guard 'api'
+            $all = Role::query()
+                ->where('guard_name', 'api')
+                ->with('permissions')
+                ->get();
+
+            // Deduplicar por nombre (si hay registros duplicados en BD por migraciones anteriores)
+            $deduped = $all
+                ->groupBy(fn($r) => strtolower(trim($r->name)))
+                ->map(fn($grp) => $grp->sortBy('id')->first())
+                ->values()
+                ->sortBy(fn($r) => strtolower($r->name), SORT_NATURAL)
+                ->values();
+
+            $rolesData = $deduped->map(function($role) {
                 return [
                     'id' => $role->id,
                     'name' => $role->name,
-                    'display_name' => ucwords(str_replace('-', ' ', $role->name)),
+                    'display_name' => ucwords(str_replace('-', ' ', trim($role->name))),
                     'guard_name' => $role->guard_name,
-                    'permissions' => $role->permissions->pluck('name'),
+                    'permissions' => $role->permissions->pluck('name')->values(),
                     'permissions_count' => $role->permissions->count(),
-                    'created_at' => $role->created_at
+                    'created_at' => $role->created_at,
                 ];
             });
 
@@ -580,8 +592,10 @@ class AdminController extends Controller
                 'success' => true,
                 'data' => $rolesData,
                 'meta' => [
-                    'total' => $roles->count(),
-                    'note' => 'Use "name" field when assigning roles, not "id"'
+                    'total' => $rolesData->count(),
+                    'duplicates_removed' => max($all->count() - $rolesData->count(), 0),
+                    'guard' => 'api',
+                    'note' => 'Use "name" when assigning roles (guard=api)'
                 ]
             ]);
 
@@ -1026,12 +1040,36 @@ class AdminController extends Controller
         try {
             $user = User::findOrFail($id);
             
+            // Validar entrada básica
             $request->validate([
                 'roles' => 'required|array',
-                'roles.*' => 'string|exists:roles,name'
             ]);
 
-            $user->removeRole($request->roles);
+            // Normalizar entrada y resolver a modelos Role (guard api)
+            $rolesToRevoke = collect($request->input('roles', []))
+                ->map(function ($role) {
+                    if (is_numeric($role)) {
+                        return Role::query()->where('guard_name', 'api')->where('id', (int)$role)->first();
+                    }
+                    if (is_array($role)) {
+                        $name = trim((string)($role['name'] ?? ''));
+                        if ($name === '') return null;
+                        return Role::query()->where('guard_name', 'api')->where('name', $name)->first();
+                    }
+                    $name = trim((string)$role);
+                    if ($name === '') return null;
+                    return Role::query()->where('guard_name', 'api')->where('name', $name)->first();
+                })
+                ->filter()
+                ->unique('id')
+                ->values();
+
+            // Revocar solo los roles indicados, dejando el resto intacto
+            foreach ($rolesToRevoke as $roleModel) {
+                if ($roleModel && $user->hasRole($roleModel->name)) {
+                    $user->removeRole($roleModel); // pasar modelo asegura guard correcto
+                }
+            }
 
             return response()->json([
                 'success' => true,

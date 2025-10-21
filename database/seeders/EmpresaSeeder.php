@@ -19,6 +19,7 @@ class EmpresaSeeder extends Seeder
                 'legal_name'          => 'EcoTech Soluciones Tecnológicas SpA',
                 'business_activity'   => 'Soluciones tecnológicas y servicios informáticos',
                 'company_address'     => 'Av. Andrés Bello 2457, Providencia, Santiago',
+                'commune_id'          => 13123, // Providencia
                 'company_phone'       => '+56 9 1234 5678',
                 'contact_email'       => 'contacto@ecotech.cl',
                 'company_website'     => 'https://ecotech.cl',
@@ -37,6 +38,7 @@ class EmpresaSeeder extends Seeder
             [
                 'subsidiary_name'             => 'EcoPC',
                 'subsidiary_address'          => 'Nueva Providencia 1363, Santiago',
+                'commune_id'                  => 13123, // Providencia
                 'subsidiary_phone'            => '+56 2 2345 6789',
                 'subsidiary_email'            => 'ventas@ecopc.cl',
                 'subsidiary_website'          => 'https://ecopc.cl',
@@ -54,6 +56,7 @@ class EmpresaSeeder extends Seeder
             [
                 'subsidiary_name'             => 'EcoTI',
                 'subsidiary_address'          => 'Manuel Montt 201, Providencia',
+                'commune_id'                  => 13123, // Providencia
                 'subsidiary_phone'            => '+56 2 2789 1234',
                 'subsidiary_email'            => 'soporte@ecoti.cl',
                 'subsidiary_website'          => 'https://ecoti.cl',
@@ -71,6 +74,7 @@ class EmpresaSeeder extends Seeder
             [
                 'subsidiary_name'             => 'RentaPC',
                 'subsidiary_address'          => 'Eliodoro Yáñez 1747, Providencia',
+                'commune_id'                  => 13123, // Providencia
                 'subsidiary_phone'            => '+56 2 2456 7890',
                 'subsidiary_email'            => 'contacto@rentapc.cl',
                 'subsidiary_website'          => 'https://rentapc.cl',
@@ -82,20 +86,21 @@ class EmpresaSeeder extends Seeder
             ]
         );
 
-        $this->crearSucursal($sub1, 'Casa Matriz EcoPC', 'Av. Santa Rosa 1234, Santiago Centro');
-        $this->crearSucursal($sub1, 'EcoPC Ñuñoa', 'Pedro de Valdivia 303, Ñuñoa');
-        $this->crearSucursal($sub2, 'Laboratorio EcoTI', 'Av. Providencia 2222, Providencia');
-        $this->crearSucursal($sub3, 'Oficina RentaPC', 'Av. Vicuña Mackenna 1001, San Joaquín');
+        $this->crearSucursal($sub1, 'Casa Matriz EcoPC', 'Av. Santa Rosa 1234, Santiago Centro', 13101);     // Santiago
+        $this->crearSucursal($sub1, 'EcoPC Ñuñoa', 'Pedro de Valdivia 303, Ñuñoa', 13120);                   // Ñuñoa
+        $this->crearSucursal($sub2, 'Laboratorio EcoTI', 'Av. Providencia 2222, Providencia', 13123);        // Providencia
+        $this->crearSucursal($sub3, 'Oficina RentaPC', 'Av. Vicuña Mackenna 1001, San Joaquín', 13129);      // San Joaquín
 
         $this->command->info("✅ Empresa + Subempresas + Sucursales creadas correctamente.");
     }
 
-    private function crearSucursal(Subsidiary $sub, string $nombre, string $direccion)
+    private function crearSucursal(Subsidiary $sub, string $nombre, string $direccion, ?int $communeId = null)
     {
         Branch::firstOrCreate(
             ['subsidiary_id' => $sub->id, 'branch_name' => $nombre],
             [
                 'branch_address'        => $direccion,
+                'commune_id'            => $communeId,
                 'branch_phone'          => '+56 2 2000 0000',
                 'branch_email'          => strtolower(str_replace(' ', '', $nombre)) . '@ecotech.cl',
                 'branch_created_at'     => now(),

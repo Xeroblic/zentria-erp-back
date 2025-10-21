@@ -35,6 +35,7 @@ class UsuarioBasicoSeeder extends Seeder
                 'position'         => 'Vendedor',
                 'rut'              => '22222222-2',
                 'address'          => 'Calle Falsa 123',
+                'commune_id'       => 13101, // Santiago
                 'phone_number'     => '987654321',
                 'password'         => bcrypt('12345678'),
                 'is_active'        => true,
@@ -54,6 +55,7 @@ class UsuarioBasicoSeeder extends Seeder
                 'position'         => 'Administradora de Sucursal',
                 'rut'              => '33333333-3',
                 'address'          => 'Av. Principal 456',
+                'commune_id'       => 13101, // Santiago
                 'phone_number'     => '998877665',
                 'password'         => bcrypt('12345678'),
                 'is_active'        => true,
@@ -75,6 +77,7 @@ class UsuarioBasicoSeeder extends Seeder
                 'position'         => 'Técnico en Reparaciones',
                 'rut'              => '44444444-4',
                 'address'          => 'Los Aromos 789',
+                'commune_id'       => 13101, // Santiago
                 'phone_number'     => '955443322',
                 'password'         => bcrypt('12345678'),
                 'is_active'        => true,
@@ -95,6 +98,7 @@ class UsuarioBasicoSeeder extends Seeder
                 'position'         => 'Encargado de Bodega',
                 'rut'              => '55555555-5',
                 'address'          => 'Santa Rosa 321',
+                'commune_id'       => 13101, // Santiago
                 'phone_number'     => '911223344',
                 'password'         => bcrypt('12345678'),
                 'is_active'        => true,

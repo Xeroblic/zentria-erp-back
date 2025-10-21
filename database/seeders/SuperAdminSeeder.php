@@ -39,6 +39,7 @@ class SuperAdminSeeder extends Seeder
                 'second_last_name' => 'San Martin',
                 'password'         => Hash::make('Hola2025!'),
                 'address'          => 'Av. Libertador Bernardo OHiggins 1234',
+                'commune_id'       => 13101, // Santiago
                 'position'         => 'CEO',
                 'rut'              => '11111111-1',
                 'phone_number'     => '999999999',

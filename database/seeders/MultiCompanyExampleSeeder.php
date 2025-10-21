@@ -35,6 +35,7 @@ class MultiCompanyExampleSeeder extends Seeder
             'representative_name' => 'María González',
             'contact_email' => 'contacto@digitalinnovate.cl',
             'company_address' => 'Av. Providencia 2000, Santiago',
+            'commune_id' => 13123, // Providencia
             'business_activity' => 'Desarrollo de software y consultoría tecnológica',
             'company_type' => 'SpA',
             'is_active' => true,
@@ -49,6 +50,7 @@ class MultiCompanyExampleSeeder extends Seeder
             'subsidiary_website' => 'https://centro.digitalinnovate.cl',
             'subsidiary_phone' => '+56-2-9999-8888',
             'subsidiary_address' => 'Av. Providencia 2000, Santiago',
+            'commune_id' => 13123, // Providencia
             'subsidiary_email' => 'centro@digitalinnovate.cl',
             'subsidiary_manager_name' => 'Pedro Morales',
             'subsidiary_manager_phone' => '+56-9-8888-9999',
@@ -62,6 +64,7 @@ class MultiCompanyExampleSeeder extends Seeder
             'branch_name' => 'Casa Matriz Digital Innovate',
         ], [
             'branch_address' => 'Av. Providencia 2000, Santiago',
+            'commune_id' => 13123, // Providencia
             'branch_phone' => '+56-2-9999-8888',
             'branch_email' => 'hq@digitalinnovate.cl',
             'branch_status' => true,
@@ -75,6 +78,7 @@ class MultiCompanyExampleSeeder extends Seeder
             'branch_name' => 'Centro de Desarrollo DI',
         ], [
             'branch_address' => 'Las Condes 1500, Santiago',
+            'commune_id' => 13114, // Las Condes
             'branch_phone' => '+56-2-9999-8889',
             'branch_email' => 'dev@digitalinnovate.cl',
             'branch_status' => true,
@@ -98,6 +102,7 @@ class MultiCompanyExampleSeeder extends Seeder
             'rut' => '22.222.222-2',
             'phone_number' => '+56-9-8888-7777',
             'address' => 'Vitacura 3000, Santiago',
+            'commune_id' => 13132, // Vitacura
             'is_active' => true,
             'primary_branch_id' => $diHqBranch->id,
         ]);
@@ -123,6 +128,7 @@ class MultiCompanyExampleSeeder extends Seeder
             'position' => 'Administradora General',
             'rut' => '33.333.333-3',
             'phone_number' => '+56-9-7777-6666',
+            'commune_id' => 13123, // Providencia (por sucursal HQ)
             'is_active' => true,
             'primary_branch_id' => $diHqBranch->id,
         ]);
@@ -140,6 +146,7 @@ class MultiCompanyExampleSeeder extends Seeder
             'position' => 'Desarrollador Senior',
             'rut' => '44.444.444-4',
             'phone_number' => '+56-9-6666-5555',
+            'commune_id' => 13114, // Las Condes (por sucursal dev)
             'is_active' => true,
             'primary_branch_id' => $diDevBranch->id,
         ]);
@@ -158,6 +165,7 @@ class MultiCompanyExampleSeeder extends Seeder
             'position' => 'Gerente de Desarrollo',
             'rut' => '55.555.555-5',
             'phone_number' => '+56-9-5555-4444',
+            'commune_id' => 13114, // Las Condes (por sucursal dev)
             'is_active' => true,
             'primary_branch_id' => $diDevBranch->id,
         ]);

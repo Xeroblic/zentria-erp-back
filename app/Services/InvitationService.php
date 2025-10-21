@@ -219,9 +219,23 @@ class InvitationService
     private function mapSpanishAlias(string $roleName): string
     {
         $map = [
-            'admin-empresa'   => 'company-admin',
-            'jefe-subempresa' => 'subsidiary-admin',
-            'jefe-sucursal'   => 'branch-admin',
+            // Existing aliases
+            'admin-empresa'       => 'company-admin',
+            'jefe-subempresa'     => 'subsidiary-admin',
+            'jefe-sucursal'       => 'branch-admin',
+
+            // Spanish → normalized English slugs
+            'super administrador' => 'super-admin',
+            'administrador'       => 'admin',
+            'supervisor empresa'  => 'company-supervisor',
+            'encargado de bodega' => 'warehouse-manager',
+            'encargado bodega'    => 'warehouse-manager',
+            'vendedor'            => 'salesperson',
+            'técnico'             => 'technician',
+            'tecnico'             => 'technician',
+            'postventa'           => 'after-sales',
+            'cajero'              => 'cashier',
+            'gerente'             => 'manager',
         ];
         $key = strtolower(trim($roleName));
         return $map[$key] ?? trim($roleName);
