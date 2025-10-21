@@ -40,14 +40,14 @@ class AdminController extends Controller
             // Aplicar filtrado jerárquico automático
             if ($currentUser->hasRole('super-admin')) {
                 // Super admin ve todos los usuarios
-                $query = User::with(['companies', 'roles', 'permissions', 'branches.subsidiary.company', 'scopeRoles.role']);
+                $query = User::with(['companies', 'roles', 'permissions', 'branches.subsidiary.company', 'scopeRoles.role', 'pendingInvitation']);
             } else {
                 // Obtener usuarios en el scope del usuario actual
                 $usersInScope = $currentUser->getUsersInScope();
                 $userIds = $usersInScope->pluck('id');
                 
                 $query = User::whereIn('id', $userIds)
-                    ->with(['companies', 'roles', 'permissions', 'branches.subsidiary.company', 'scopeRoles.role']);
+                    ->with(['companies', 'roles', 'permissions', 'branches.subsidiary.company', 'scopeRoles.role', 'pendingInvitation']);
             }
             
             // Filtros adicionales
@@ -161,6 +161,13 @@ class AdminController extends Controller
                 $canEdit = $currentUser->hasRole('super-admin') || 
                           ($user->id !== $currentUser->id && !$user->hasRole('super-admin'));
                 
+                // Calcular roles visibles: si no tiene roles aún y tiene invitación pendiente,
+                // usar el rol de la invitación como fallback para mostrar en UI.
+                $globalRoles = $user->roles->pluck('name');
+                if ($globalRoles->isEmpty() && optional($user->pendingInvitation)->role_name) {
+                    $globalRoles = collect([$user->pendingInvitation->role_name]);
+                }
+
                 return [
                     'id' => $user->id,
                     'pk' => $user->id,
@@ -189,8 +196,9 @@ class AdminController extends Controller
                         ];
                     }),
                     
-                    // Roles globales
-                    'global_roles' => $user->roles->pluck('name'),
+                    // Roles globales (incluye rol de invitación si aún no tiene)
+                    'global_roles' => $globalRoles,
+                    'invited_role' => optional($user->pendingInvitation)->role_name,
                     
                     // Roles contextuales 
                     'contextual_roles' => $contextualRoles,
@@ -271,7 +279,7 @@ class AdminController extends Controller
             $currentUser = JWTAuth::parseToken()->authenticate();
             
             // Buscar el usuario con todas las relaciones
-            $user = User::with(['companies', 'roles', 'permissions', 'branches.subsidiary.company', 'scopeRoles.role'])
+            $user = User::with(['companies', 'roles', 'permissions', 'branches.subsidiary.company', 'scopeRoles.role', 'pendingInvitation'])
                 ->findOrFail($id);
             
             // Verificar que el usuario actual puede ver este usuario
@@ -364,6 +372,12 @@ class AdminController extends Controller
             $canEdit = $currentUser->hasRole('super-admin') || 
                       ($user->id !== $currentUser->id && !$user->hasRole('super-admin'));
             
+            // Calcular roles visibles con fallback a invitación
+            $globalRoles = $user->roles->pluck('name');
+            if ($globalRoles->isEmpty() && optional($user->pendingInvitation)->role_name) {
+                $globalRoles = collect([$user->pendingInvitation->role_name]);
+            }
+
             $userData = [
                 'id' => $user->id,
                 'pk' => $user->id,
@@ -392,8 +406,9 @@ class AdminController extends Controller
                     ];
                 }),
                 
-                // Roles globales
-                'global_roles' => $user->roles->pluck('name'),
+                // Roles globales (incluye rol de invitación si aún no tiene)
+                'global_roles' => $globalRoles,
+                'invited_role' => optional($user->pendingInvitation)->role_name,
                 
                 // Roles contextuales 
                 'contextual_roles' => $contextualRoles,

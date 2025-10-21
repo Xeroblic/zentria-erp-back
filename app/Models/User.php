@@ -9,6 +9,8 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use App\Models\Invitation;
+use App\Enums\InvitationStatus;
 
 
 class User extends Authenticatable implements JWTSubject , HasMedia
@@ -150,6 +152,19 @@ class User extends Authenticatable implements JWTSubject , HasMedia
         return $this->belongsToMany(Company::class)
             ->withPivot('is_primary', 'position_in_company', 'joined_at')
             ->withTimestamps();
+    }
+
+    // Invitaciones asociadas por email
+    public function invitations()
+    {
+        return $this->hasMany(Invitation::class, 'email', 'email');
+    }
+
+    // Invitación pendiente (si existe) asociada por email
+    public function pendingInvitation()
+    {
+        return $this->hasOne(Invitation::class, 'email', 'email')
+            ->where('status', InvitationStatus::PENDING);
     }
 
     // Empresa principal del usuario
