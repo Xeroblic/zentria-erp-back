@@ -249,26 +249,15 @@ class InvitationService
 
     private function buildActivationUrl(string $token): string
     {
-        // Supports two modes controlled by FRONTEND_ACTIVATION_URL:
-        // 1) Template mode: e.g. 'https://front.tld/activate?token={token}'
-        //    We replace {token} with the real token.
-        // 2) Base URL mode: e.g. 'https://front.tld' (no {token})
-        //    We will append the backend endpoint path '/usuarios/activar/{token}'.
-        $tpl = config('app.frontend_activation_url');
-
-        if ($tpl) {
-            if (str_contains($tpl, '{token}')) {
-                return str_replace('{token}', $token, $tpl);
-            }
-
-            // Treat value as base/origin; append endpoint path.
-            // Normalize slashes to avoid '//' issues.
-            $base = rtrim($tpl, "/ ");
-            $path = '/usuarios/activar/' . $token;
-            return $base . $path;
+        // FRONTEND_ACTIVATION_URL is treated as BASE ONLY.
+        // Final format: {BASE}/usuarios/activar/{token}
+        $base = config('app.frontend_activation_url');
+        if ($base) {
+            $base = rtrim($base, "/ ");
+            return $base . '/usuarios/activar/' . $token;
         }
 
-        // Backend fallback (renderizado por Laravel):
+        // Backend fallback (renderizado por Laravel)
         return url('/usuarios/activar/'.$token);
     }
 }
