@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\InvitationStatus;
 use App\Models\{Invitation, User, Branch};
 use App\Notifications\UserInvitationNotification;
+use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -30,11 +31,8 @@ class InvitationService
             throw ValidationException::withMessages(['permission' => 'Not allowed to invite to this branch.']);
         }
 
-        // Map role aliases (Spanish -> internal)
-        $role = $this->normalizeRoleName($payload['role_name'] ?? '');
-        if (! $role) {
-            throw ValidationException::withMessages(['role_name' => 'Invalid role_name.']);
-        }
+        // Resolve role dynamically (prefer role_id; fallback to role_name with alias map)
+        $role = $this->resolveRole($payload);
 
         // Email validation + uniqueness (block if ANY user already has this email)
         $email = strtolower(trim($payload['email'] ?? ''));
@@ -80,7 +78,8 @@ class InvitationService
                 'address'           => $payload['address'] ?? null,
                 'invited_by'        => $inviter->id,
                 'branch_id'         => $branch->id,
-                'role_name'         => $role,
+                'role_id'           => $role->id,
+                'role_name'         => $role->name,
                 'permissions'       => $payload['permissions'] ?? null,
                 'temporary_password'=> $tempPasswordHash, // store HASH only
                 'status'            => InvitationStatus::PENDING,
@@ -103,7 +102,7 @@ class InvitationService
             Notification::route('mail', $email)->notify(
                 new UserInvitationNotification(
                     $activationUrl,                 // activationUrl
-                    $role,                          // role
+                    $role->name,                    // role
                     $branchLabel,                   // branchName (puede ser null/str)
                     $expiresAt->toIso8601String()   // expiresAt (string)
                 )
@@ -186,25 +185,59 @@ class InvitationService
         return false;
     }
 
-    private function normalizeRoleName(string $roleName): ?string
+    private function resolveRole(array $payload): Role
+    {
+        // Prefer role_id if provided
+        if (!empty($payload['role_id'])) {
+            $role = Role::query()
+                ->whereKey((int) $payload['role_id'])
+                ->where('guard_name', 'api')
+                ->first();
+            if (! $role) {
+                throw ValidationException::withMessages(['role_id' => 'Invalid role_id.']);
+            }
+            return $role;
+        }
+
+        // Fallback: role_name provided; allow Spanish aliases but validate against DB
+        $input = (string) ($payload['role_name'] ?? '');
+        $normalized = $this->mapSpanishAlias($input);
+
+        $role = Role::query()
+            ->where('name', $normalized)
+            ->where('guard_name', 'api')
+            ->first();
+        if (! $role) {
+            throw ValidationException::withMessages(['role' => 'Invalid role.']);
+        }
+        return $role;
+    }
+
+    private function mapSpanishAlias(string $roleName): string
     {
         $map = [
             'admin-empresa'   => 'company-admin',
             'jefe-subempresa' => 'subsidiary-admin',
             'jefe-sucursal'   => 'branch-admin',
-            'company-admin'   => 'company-admin',
-            'subsidiary-admin'=> 'subsidiary-admin',
-            'branch-admin'    => 'branch-admin',
-            'super-admin'     => 'super-admin',
         ];
         $key = strtolower(trim($roleName));
-        return $map[$key] ?? null;
+        return $map[$key] ?? trim($roleName);
     }
 
     private function assignScopedRoleAndPermissions(User $user, Invitation $inv): void
     {
         if (method_exists($user, 'assignRole')) {
-            $user->assignRole($inv->role_name);
+            if (!empty($inv->role_id)) {
+                // Assign via Role model if we have id
+                $role = Role::find($inv->role_id);
+                if ($role) {
+                    $user->assignRole($role);
+                } else {
+                    $user->assignRole($inv->role_name);
+                }
+            } else {
+                $user->assignRole($inv->role_name);
+            }
         }
         // Example (if you use scope_roles):
         // app(ContextualRoleService::class)->assign($user, $inv->role_name, 'branch', $inv->branch_id);
@@ -216,12 +249,25 @@ class InvitationService
 
     private function buildActivationUrl(string $token): string
     {
-        // If you set FRONTEND_ACTIVATION_URL='https://.../activate?token={token}',
-        // this will replace {token} with the real token.
+        // Supports two modes controlled by FRONTEND_ACTIVATION_URL:
+        // 1) Template mode: e.g. 'https://front.tld/activate?token={token}'
+        //    We replace {token} with the real token.
+        // 2) Base URL mode: e.g. 'https://front.tld' (no {token})
+        //    We will append the backend endpoint path '/usuarios/activar/{token}'.
         $tpl = config('app.frontend_activation_url');
-        if ($tpl && str_contains($tpl, '{token}')) {
-            return str_replace('{token}', $token, $tpl);
+
+        if ($tpl) {
+            if (str_contains($tpl, '{token}')) {
+                return str_replace('{token}', $token, $tpl);
+            }
+
+            // Treat value as base/origin; append endpoint path.
+            // Normalize slashes to avoid '//' issues.
+            $base = rtrim($tpl, "/ ");
+            $path = '/usuarios/activar/' . $token;
+            return $base . $path;
         }
+
         // Backend fallback (renderizado por Laravel):
         return url('/usuarios/activar/'.$token);
     }

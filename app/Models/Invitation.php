@@ -12,7 +12,7 @@ class Invitation extends Model
 
     protected $fillable = [
         'uid','token','email','first_name','last_name','rut','position','phone_number','address',
-        'invited_by','branch_id','role_name','permissions','temporary_password',
+        'invited_by','branch_id','role_id','role_name','permissions','temporary_password',
         'status','expires_at','sent_at','accepted_at','data'
     ];
 
@@ -27,4 +27,5 @@ class Invitation extends Model
 
     public function branch(): BelongsTo { return $this->belongsTo(Branch::class); }
     public function inviter(): BelongsTo { return $this->belongsTo(User::class, 'invited_by'); }
+    public function role(): BelongsTo { return $this->belongsTo(\Spatie\Permission\Models\Role::class, 'role_id'); }
 }

@@ -30,7 +30,7 @@ class UserInvitationController extends Controller
             'rut'               => ['nullable','string','max:255'],
             'phone_number'      => ['nullable','string','max:255'],
             'address'           => ['nullable','string'],
-            'role_name'         => ['required','string','max:255'],
+            'role_id'           => ['required','integer','exists:roles,id'],
             'permissions'       => ['nullable','array'],
             'data'              => ['nullable','array'],
             'ttl_days'          => ['nullable','integer','min:1','max:60'],
@@ -70,6 +70,7 @@ class UserInvitationController extends Controller
             'email'      => $inv->email,
             'first_name' => $inv->first_name,
             'last_name'  => $inv->last_name,
+            'role_id'    => $inv->role_id,
             'role_name'  => $inv->role_name,
             'branch_id'  => $inv->branch_id,
         ]);
@@ -137,6 +138,7 @@ class UserInvitationController extends Controller
             return [
                 'id'           => $inv->id,
                 'email'        => $inv->email,
+                'role_id'      => $inv->role_id,
                 'role'         => $inv->role_name,
                 'status'       => $inv->status,
                 'invited_at'   => $inv->created_at,

@@ -30,6 +30,7 @@ return new class extends Migration
             // Scope to branch; company/subsidiary derived via relations
             $table->foreignId('invited_by')->constrained('users');    // ->cascadeOnDelete() if desired
             $table->foreignId('branch_id')->constrained('branches');  // ->cascadeOnDelete() if desired
+            $table->foreignId('role_id')->nullable()->constrained('roles');
 
             $table->string('role_name', 255);           // e.g. company-admin | subsidiary-admin | branch-admin
             $table->json('permissions')->nullable();    // optional granular overrides
@@ -46,6 +47,7 @@ return new class extends Migration
 
             $table->index(['email', 'status']);
             $table->index(['branch_id', 'status']);
+            $table->index(['role_id']);
         });
 
         /*
