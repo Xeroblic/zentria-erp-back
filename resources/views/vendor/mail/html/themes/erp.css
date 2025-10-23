@@ -1,21 +1,105 @@
-/* resources/views/vendor/mail/html/themes/erp.css */
+/* Material-inspired theme (greens + blues) */
+
+:root {
+  --md-primary: #0ea5e9;   /* sky-500 */
+  --md-primary-dark: #0284c7; /* sky-600 */
+  --md-accent: #10b981;    /* emerald-500 */
+  --md-accent-dark: #059669; /* emerald-600 */
+  --md-bg: #f3f6fb;
+  --md-card: #ffffff;
+  --md-text: #0f172a; /* slate-900 */
+  --md-muted: #64748b; /* slate-500 */
+}
+
+body { color: var(--md-text); }
+
 .body {
-  background-color: #f6f7fb;
-  color: #111827;
+  background-color: var(--md-bg);
+  color: var(--md-text);
 }
+
 .wrapper {
-  background-color: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(17,24,39,0.08);
+  background-color: transparent;
 }
-a { color: #0ea5e9; } /* links */
+
+.inner-body {
+  border-radius: 16px !important;
+  border: 1px solid rgba(2,132,199,0.12) !important; /* sky-600 tint */
+  box-shadow: 0 6px 16px rgba(2,132,199,0.10), 0 1px 2px rgba(2,132,199,0.06) !important;
+  overflow: hidden;
+}
+
+.content-cell {
+  padding: 36px !important;
+}
+
+/* Links */
+a { color: var(--md-primary); }
+
+/* Headings */
+h1, h2, h3 { color: #0b3b5e; }
+h1 { font-size: 22px !important; font-weight: 800 !important; }
+
+/* Button base */
 .button {
-  background-color: #111827; /* botón negro elegante */
-  border-radius: 10px;
-  padding: 12px 20px;
+  border-radius: 10px !important;
+  padding: 12px 22px !important;
+  text-transform: none !important;
+  letter-spacing: .2px !important;
+  text-align: center !important;
 }
+
+/* Primary (blue -> green gradient) */
+.button-primary, .button-blue {
+  background: linear-gradient(135deg, var(--md-primary) 0%, var(--md-accent) 100%) !important;
+  border-top: 10px solid transparent !important;
+  border-right: 22px solid transparent !important;
+  border-bottom: 10px solid transparent !important;
+  border-left: 22px solid transparent !important;
+  color: #ffffff !important;
+}
+
+/* Success (pure green) */
+.button-success, .button-green {
+  background: linear-gradient(135deg, var(--md-accent) 0%, var(--md-accent-dark) 100%) !important;
+  border-top: 10px solid transparent !important;
+  border-right: 22px solid transparent !important;
+  border-bottom: 10px solid transparent !important;
+  border-left: 22px solid transparent !important;
+  color: #ffffff !important;
+}
+
+/* Panel (info surface) */
 .panel {
-  background-color: #f3f4f6;
-  border-radius: 12px;
-  border: none;
+  border-left: 6px solid var(--md-primary-dark) !important;
+  margin: 24px 0 !important;
+}
+.panel-content { 
+  background: linear-gradient(180deg, rgba(14,165,233,0.08) 0%, rgba(16,185,129,0.06) 100%) !important;
+  color: var(--md-muted) !important;
+  padding: 16px 18px !important;
+  border-radius: 10px !important;
+}
+.panel-content p { color: var(--md-muted) !important; }
+
+/* Subcopy */
+.subcopy { border-top: 1px dashed rgba(2,132,199,0.25) !important; }
+
+/* Utility: hero band injected via custom markup */
+.hero-band {
+  width: 100%;
+  display: block;
+  background: linear-gradient(90deg, var(--md-primary-dark) 0%, var(--md-accent-dark) 100%);
+  color: #fff;
+  padding: 18px 28px;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: .3px;
+  border-radius: 14px;
+}
+
+/* Action spacing and responsiveness */
+.action { margin: 24px auto !important; }
+@media only screen and (max-width: 560px) {
+  .button { width: 100% !important; display: block !important; }
 }
