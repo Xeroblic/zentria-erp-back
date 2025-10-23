@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\InvitationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
+use App\Models\User;
 use App\Services\InvitationService;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -148,5 +149,58 @@ class UserInvitationController extends Controller
         })->values();
 
         return response()->json(['data' => $data]);
+    }
+
+    /** DELETE /api/user/invitations/{id} — eliminar invitación pendiente */
+    public function destroy(Request $request, int $id)
+    {
+        $user = $request->user();
+
+        $inv = Invitation::find($id);
+        if (! $inv) {
+            return response()->json(['message' => 'Invitation not found'], 404);
+        }
+
+        // Autorización basada en alcance similar a index
+        $allowed = true;
+        if (!method_exists($user, 'hasRole') || !$user->hasRole('super-admin')) {
+            if (method_exists($user, 'branches')) {
+                $allowed = $user->branches()->whereKey($inv->branch_id)->exists();
+            } else {
+                $allowed = ($inv->invited_by === $user->id);
+            }
+        }
+        if (! $allowed) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        // Solo eliminar si está pendiente
+        if ($inv->status !== InvitationStatus::PENDING) {
+            return response()->json(['message' => 'Only pending invitations can be deleted'], 409);
+        }
+
+        // Si existe el usuario temporal y no está activo, elimínalo
+        $tempUser = User::where('email', $inv->email)->first();
+        if ($tempUser && !($tempUser->is_active)) {
+            // Detach de relaciones por seguridad si aplica
+            if (method_exists($tempUser, 'branches')) {
+                $tempUser->branches()->detach();
+            }
+            $tempUser->delete();
+        }
+
+        $deletedId = $inv->id;
+        $deletedEmail = $inv->email;
+        $inv->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Invitación eliminada exitosamente',
+            'data' => [
+                'id' => $deletedId,
+                'email' => $deletedEmail,
+                'status' => 'deleted'
+            ]
+        ], 200);
     }
 }

@@ -1034,47 +1034,90 @@ class AdminController extends Controller
 
     /**
      * Revocar roles de usuario
+     * - Si se intenta revocar un rol que el usuario no tiene, retorna error 400 con detalle
+     * - En éxito, retorna los roles revocados y los roles restantes del usuario
      */
     public function revokeRolesFromUser(Request $request, $id): JsonResponse
     {
         try {
             $user = User::findOrFail($id);
-            
+
             // Validar entrada básica
             $request->validate([
                 'roles' => 'required|array',
             ]);
 
-            // Normalizar entrada y resolver a modelos Role (guard api)
-            $rolesToRevoke = collect($request->input('roles', []))
-                ->map(function ($role) {
+            $rawRoles = collect($request->input('roles', []));
+
+            // Resolver roles (por id o nombre) solo del guard 'api'
+            $resolved = $rawRoles->map(function ($role) {
                     if (is_numeric($role)) {
-                        return Role::query()->where('guard_name', 'api')->where('id', (int)$role)->first();
+                        return [
+                            'input' => (string) $role,
+                            'model' => Role::query()->where('guard_name', 'api')->where('id', (int) $role)->first(),
+                            'label' => 'id:' . (string) $role,
+                        ];
                     }
                     if (is_array($role)) {
                         $name = trim((string)($role['name'] ?? ''));
-                        if ($name === '') return null;
-                        return Role::query()->where('guard_name', 'api')->where('name', $name)->first();
+                        return [
+                            'input' => $name,
+                            'model' => $name !== '' ? Role::query()->where('guard_name', 'api')->where('name', $name)->first() : null,
+                            'label' => $name !== '' ? $name : 'name:undefined',
+                        ];
                     }
-                    $name = trim((string)$role);
-                    if ($name === '') return null;
-                    return Role::query()->where('guard_name', 'api')->where('name', $name)->first();
+                    $name = trim((string) $role);
+                    return [
+                        'input' => $name,
+                        'model' => $name !== '' ? Role::query()->where('guard_name', 'api')->where('name', $name)->first() : null,
+                        'label' => $name !== '' ? $name : 'name:undefined',
+                    ];
                 })
-                ->filter()
-                ->unique('id')
+                ->filter(fn($r) => $r['input'] !== '')
+                // Deduplicar por id cuando exista, si no por label
+                ->unique(function ($r) { return $r['model']?->id ?: $r['label']; })
                 ->values();
 
-            // Revocar solo los roles indicados, dejando el resto intacto
-            foreach ($rolesToRevoke as $roleModel) {
-                if ($roleModel && $user->hasRole($roleModel->name)) {
-                    $user->removeRole($roleModel); // pasar modelo asegura guard correcto
-                }
+            // Roles que no existen en DB (opcionales de reportar)
+            $notFound = $resolved->filter(fn($r) => !$r['model'])->pluck('label')->values();
+
+            // Filtrar a modelos válidos
+            $roleModels = $resolved->pluck('model')->filter()->values();
+
+            // Verificar roles no asignados al usuario
+            $notAssigned = $roleModels
+                ->filter(fn($role) => !$user->hasRole($role->name))
+                ->pluck('name')
+                ->values();
+
+            if ($notAssigned->isNotEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error: rol no asignado al usuario',
+                    'data' => [
+                        'no_assigned_roles' => $notAssigned,
+                        // Información adicional útil si hubo entradas inválidas
+                        'not_existing_roles' => $notFound,
+                    ],
+                ], 400);
             }
+
+            // Proceder a revocar y reportar explícitamente los roles revocados
+            $removed = [];
+            foreach ($roleModels as $roleModel) {
+                $user->removeRole($roleModel); // pasar modelo asegura guard correcto
+                $removed[] = $roleModel->name;
+            }
+
+            $remaining = $user->roles->pluck('name')->values();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Roles revocados exitosamente',
-                'data' => $user->roles->pluck('name')
+                'data' => [
+                    'removed_roles' => array_values($removed),
+                    'existing_roles' => $remaining,
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -1124,11 +1167,17 @@ class AdminController extends Controller
                 'remaining_roles' => $user->roles->pluck('name')->toArray()
             ]);
 
+            $remaining = $user->roles->pluck('name')->values();
+
             return response()->json([
                 'success' => true,
                 'message' => "Rol '{$roleName}' revocado exitosamente",
-                'data' => $user->roles->pluck('name'),
-                'removed_role' => $roleName
+                'removed_role' => $roleName,
+                'existing_roles' => $remaining,
+                'data' => [
+                    'removed_roles' => [$roleName],
+                    'existing_roles' => $remaining,
+                ]
             ]);
 
         } catch (\Exception $e) {
