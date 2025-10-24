@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
@@ -38,7 +38,7 @@ Route::post('/_diag-login', function (\Illuminate\Http\Request $r) {
     ]);
 });
 
-// Rutas de autenticación directas (para compatibilidad con frontend)
+// Rutas de autenticaciÃ³n directas (para compatibilidad con frontend)
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 Route::middleware(['auth:api'])->group(function () {
@@ -48,22 +48,22 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('perfil', [AuthController::class, 'perfil']); // Alias para compatibilidad
     Route::get('available-companies', [AuthController::class, 'getAvailableCompanies']);
     
-    // Rutas de personalización directas (para compatibilidad con frontend)
+    // Rutas de personalizaciÃ³n directas (para compatibilidad con frontend)
     Route::get('user/personalization', [UserPersonalizationController::class, 'show']);
     Route::put('user/personalization', [UserPersonalizationController::class, 'update']);
     Route::post('user/switch-company', [UserPersonalizationController::class, 'switchCompany']);
 });
 
-// Rutas públicas de permisos y roles (para frontend)
+// Rutas pÃºblicas de permisos y roles (para frontend)
 Route::middleware(['auth:api'])->group(function () {
     Route::get('permissions', [AdminController::class, 'getPermissions']);
     Route::get('roles', [AdminController::class, 'getRoles']);
     Route::get('users', [AdminController::class, 'getUsers']);
 });
 
-// Rutas de administración que requieren autenticación
+// Rutas de administraciÃ³n que requieren autenticaciÃ³n
 Route::middleware(['auth:api'])->group(function () {
-    // Gestión de usuarios
+    // GestiÃ³n de usuarios
     Route::get('users', [AdminController::class, 'getUsers']);
     Route::get('users/{id}', [AdminController::class, 'getUser']); // Nueva ruta para usuario individual
     Route::post('users', [AdminController::class, 'createUser']);
@@ -71,13 +71,13 @@ Route::middleware(['auth:api'])->group(function () {
     Route::delete('users/{id}', [AdminController::class, 'deleteUser']);
     Route::patch('users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus']);
     
-    // Gestión de permisos de usuarios
+    // GestiÃ³n de permisos de usuarios
     Route::get('users/{id}/permissions', [AdminController::class, 'getUserPermissions']);
     Route::post('users/{id}/permissions', [AdminController::class, 'assignPermissionsToUser']);
     Route::delete('users/{id}/permissions', [AdminController::class, 'revokePermissionsFromUser']);
     Route::delete('users/{userId}/permissions/{permissionId}', [AdminController::class, 'revokeSpecificPermissionFromUser']);
     
-    // Gestión de roles de usuarios
+    // GestiÃ³n de roles de usuarios
     Route::get('users/{id}/roles', [AdminController::class, 'getUserRoles']);
     Route::post('users/{id}/roles', [AdminController::class, 'assignRolesToUser']);
     Route::patch('users/{id}/roles', [AdminController::class, 'updateUserRoles']);
@@ -112,7 +112,7 @@ use App\Http\Controllers\CompanyController;
 
 Route::middleware(['auth:api'])->group(function () {
     
-    /// Funciones dentro de compañia tipo CRUD
+    /// Funciones dentro de compaÃ±ia tipo CRUD
     
     Route::post('companies', [CompanyController::class, 'store'])
         ->middleware('can:create-company');
@@ -143,7 +143,7 @@ Route::middleware(['auth:api'])->group(function () {
         ->middleware('can:viewAny,App\\Models\\Subsidiary')
         ->name('companies.subsidiaries');
     
-    // Rutas dinámicas para la empresa del usuario actual (sin IDs hardcodeados)
+    // Rutas dinÃ¡micas para la empresa del usuario actual (sin IDs hardcodeados)
     Route::get('my-company', [CompanyController::class, 'myCompany'])
         ->middleware('can:view-company')
         ->name('my-company.show');
@@ -162,7 +162,7 @@ Route::middleware(['auth:api'])->group(function () {
 
 });
 
-// Rutas de autenticación bajo el prefijo 'auth'
+// Rutas de autenticaciÃ³n bajo el prefijo 'auth'
 Route::prefix('auth')->group(function () {
     require __DIR__ . '/apis/auth.php';
 });
@@ -187,9 +187,9 @@ require __DIR__ . '/apis/locations.php';
 // RUTAS DE SERVICIOS EXTERNOS
 // ===============================================
 
-// // Rutas de Falabella (requieren autenticación)
+// // Rutas de Falabella (requieren autenticaciÃ³n)
 // Route::middleware(['auth:api'])->prefix('falabella')->group(function () {
-//     // Endpoint de diagnóstico (temporal para debug)
+//     // Endpoint de diagnÃ³stico (temporal para debug)
 //     Route::get('/_mode', function (\App\Services\Falabella\FalabellaClient $client) {
 //         return response()->json([
 //             'mode' => $client instanceof \App\Services\Falabella\FalabellaMockService ? 'mock' : 'live',
@@ -207,7 +207,7 @@ require __DIR__ . '/apis/locations.php';
 //     Route::get('/stock', [FalabellaController::class, 'stock']);
 //     Route::get('/categories', [FalabellaController::class, 'categories']);
     
-//     // Datos de ventas y análisis
+//     // Datos de ventas y anÃ¡lisis
 //     Route::get('/sales', [FalabellaController::class, 'sales']);
 //     Route::get('/orders', [FalabellaController::class, 'orders']);
 //     Route::get('/low-stock', [FalabellaController::class, 'lowStock']);
@@ -222,7 +222,10 @@ require __DIR__ . '/apis/locations.php';
 // });
 
 
-// TODO: Aquí puedes agregar otros servicios como MercadoLibre, Amazon, etc.
+// TODO: AquÃ­ puedes agregar otros servicios como MercadoLibre, Amazon, etc.
 // Route::middleware(['auth:api'])->prefix('mercadolibre')->group(function () {
 //     // Rutas de MercadoLibre
 // });
+
+require __DIR__ . '/apis/notifications.php';
+

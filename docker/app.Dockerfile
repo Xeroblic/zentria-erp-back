@@ -28,6 +28,13 @@ RUN printf "upload_max_filesize=32M\npost_max_size=32M\nmemory_limit=512M\n" \
 RUN docker-php-ext-install -j"$(nproc)" bcmath \
  && docker-php-ext-enable bcmath
 
+# Redis extension for Laravel queue/cache
+RUN pecl install redis \
+ && docker-php-ext-enable redis
+
+# PCNTL needed by Laravel Horizon
+RUN docker-php-ext-install pcntl
+
  # Xdebug deshabilitado
  # Por si la imagen base/parent lo traía habilitado, lo “extirpamos”:
 RUN rm -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \

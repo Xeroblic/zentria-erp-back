@@ -31,6 +31,48 @@ services:
       db:
         condition: service_healthy
 
+  redis:
+    image: redis:7-alpine
+    container_name: erp-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  horizon:
+    build:
+      context: .
+      dockerfile: docker/app.Dockerfile
+    container_name: erp-horizon
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - .:/var/www
+      - vendor:/var/www/vendor
+    command: >
+      sh -lc "
+        php artisan config:clear || true;
+        until php artisan list | grep -qi horizon; do
+          echo '[horizon] Package not installed yet. Waiting...';
+          sleep 5;
+        done;
+        php artisan horizon
+      "
+
   db:
     image: postgres:16
     container_name: erp-db
@@ -141,3 +183,4 @@ volumes:
   db-data:
   vendor:
   db-test-data:
+  redis-data:
